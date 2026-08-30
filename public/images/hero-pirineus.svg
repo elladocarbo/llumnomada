@@ -1,0 +1,29 @@
+<svg viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skyP" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F4A93B"/>
+      <stop offset="55%" stop-color="#EE8C4D"/>
+      <stop offset="100%" stop-color="#D9663A"/>
+    </linearGradient>
+    <linearGradient id="mtnBack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8B4A44"/>
+      <stop offset="100%" stop-color="#6B3A3E"/>
+    </linearGradient>
+    <linearGradient id="mtnMid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5A3140"/>
+      <stop offset="100%" stop-color="#402634"/>
+    </linearGradient>
+    <linearGradient id="lakeP" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F4A93B"/>
+      <stop offset="100%" stop-color="#16424D"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#skyP)"/>
+  <circle cx="600" cy="230" r="90" fill="#FBF3E7" opacity="0.9"/>
+  <polygon points="0,320 220,140 420,330 620,120 780,300 980,160 1200,340 1200,630 0,630" fill="url(#mtnBack)"/>
+  <polygon points="0,420 180,260 380,430 560,240 760,410 940,270 1200,440 1200,630 0,630" fill="url(#mtnMid)"/>
+  <polygon points="150,430 200,390 240,420 190,440" fill="#FBF3E7" opacity="0.5"/>
+  <polygon points="540,250 590,210 630,240 580,260" fill="#FBF3E7" opacity="0.5"/>
+  <rect y="470" width="1200" height="160" fill="url(#lakeP)"/>
+  <ellipse cx="600" cy="475" rx="90" ry="10" fill="#FBF3E7" opacity="0.35"/>
+</svg>

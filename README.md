@@ -1,63 +1,48 @@
-# Astro Starter Kit: Blog
+# Llum Nòmada
 
-```sh
-npm create astro@latest -- --template blog
-```
+Bloc de viatges construït amb [Astro](https://astro.build). Rutes de muntanya, caps de setmana urbans i consells pràctics per viatjar lleuger, en català.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Desplegat a Netlify des del repositori de GitHub: cada push a `main` genera un nou desplegament a [llumnomada.netlify.app](https://llumnomada.netlify.app).
 
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+## 🚀 Estructura del projecte
 
 ```text
 ├── public/
+│   └── images/          # il·lustracions dels articles (SVG)
 ├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
+│   ├── components/
+│   ├── content/
+│   │   └── blog/        # articles en Markdown / MDX
+│   ├── layouts/
+│   ├── pages/
+│   └── styles/
 ├── astro.config.mjs
-├── README.md
 ├── package.json
 └── tsconfig.json
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Cada article viu a `src/content/blog/` com a fitxer `.md` o `.mdx`, amb capçalera (frontmatter) del tipus:
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+```yaml
+---
+title: 'Títol de l’article'
+description: 'Resum breu per a SEO i xarxes'
+pubDate: 'March 3 2026'
+heroImage: '/images/hero-exemple.svg'
+location: 'Ciutat, País' # opcional
+tags: ['etiqueta1', 'etiqueta2'] # opcional
+---
+```
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+## 🧞 Ordres
 
-Any static assets, like images, can be placed in the `public/` directory.
+| Ordre                     | Acció                                            |
+| :------------------------ | :------------------------------------------------ |
+| `npm install`              | Instal·la les dependències                        |
+| `npm run dev`               | Aixeca el servidor de desenvolupament a `localhost:4321` |
+| `npm run build`             | Genera el lloc de producció a `./dist/`           |
+| `npm run preview`           | Previsualitza el build en local abans de publicar |
 
-## 🧞 Commands
+## 👀 Vols saber-ne més?
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+Consulta la [documentació d'Astro](https://docs.astro.build).

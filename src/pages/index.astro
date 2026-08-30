@@ -1,48 +1,136 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog'))
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+	.slice(0, 3);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="ca">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			.hero {
+				background: url('/images/hero-home.svg') center / cover no-repeat;
+				color: var(--sand);
+				padding: 5em 1em;
+				text-align: center;
+			}
+			.hero h1 {
+				color: var(--sand);
+				font-size: 3.2em;
+				margin-bottom: 0.2em;
+			}
+			.hero p {
+				font-size: 1.3em;
+				max-width: 640px;
+				margin: 0 auto 1.5em auto;
+				opacity: 0.95;
+			}
+			.hero a.cta {
+				display: inline-block;
+				background: var(--accent);
+				color: var(--sand);
+				padding: 0.7em 1.6em;
+				border-radius: 999px;
+				text-decoration: none;
+				font-weight: 700;
+			}
+			.hero a.cta:hover {
+				background: var(--accent-dark);
+			}
+			.latest {
+				width: 960px;
+				max-width: calc(100% - 2em);
+				margin: 3em auto;
+				padding: 0 1em;
+			}
+			.latest h2 {
+				margin-bottom: 1em;
+			}
+			ul {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 2rem;
+				list-style-type: none;
+				margin: 0;
+				padding: 0;
+			}
+			ul li {
+				width: calc(33.333% - 1.4rem);
+			}
+			ul li a {
+				display: block;
+				text-decoration: none;
+			}
+			ul li img {
+				display: block;
+				width: 100%;
+				height: 180px;
+				object-fit: cover;
+				border-radius: 12px;
+				margin-bottom: 0.5em;
+			}
+			ul li h4 {
+				margin: 0;
+				color: rgb(var(--black));
+			}
+			ul li .date {
+				margin: 0;
+				color: rgb(var(--gray));
+			}
+			ul li a:hover h4 {
+				color: var(--accent);
+			}
+			.see-all {
+				display: block;
+				text-align: center;
+				margin-top: 2em;
+				font-weight: 700;
+			}
+			@media (max-width: 720px) {
+				.hero h1 {
+					font-size: 2.2em;
+				}
+				ul li {
+					width: 100%;
+				}
+			}
+		</style>
 	</head>
 	<body>
 		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+		<main style="padding: 0; width: 100%; max-width: 100%;">
+			<section class="hero">
+				<h1>☀ {SITE_TITLE}</h1>
+				<p>{SITE_DESCRIPTION}</p>
+				<a class="cta" href="/blog">Descobreix les rutes</a>
+			</section>
+			<section class="latest">
+				<h2>Darrers articles</h2>
+				<ul>
+					{
+						posts.map((post) => (
+							<li>
+								<a href={`/blog/${post.id}/`}>
+									{post.data.heroImage && <img src={post.data.heroImage} alt="" />}
+									<h4>{post.data.title}</h4>
+									<p class="date">
+										<FormattedDate date={post.data.pubDate} />
+									</p>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+				<a class="see-all" href="/blog">Veure tots els articles →</a>
+			</section>
 		</main>
 		<Footer />
 	</body>
