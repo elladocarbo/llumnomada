@@ -1,32 +1,12 @@
 <svg viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="skyM" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#D9663A"/>
-      <stop offset="100%" stop-color="#F4A93B"/>
-    </linearGradient>
-    <linearGradient id="duneBack" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#E08A4B"/>
-      <stop offset="100%" stop-color="#C96A3E"/>
-    </linearGradient>
-    <linearGradient id="duneFront" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#B85A38"/>
-      <stop offset="100%" stop-color="#8B4A44"/>
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="630" fill="url(#skyM)"/>
-  <circle cx="300" cy="180" r="80" fill="#FBF3E7" opacity="0.85"/>
-  <path d="M0,340 Q200,260 420,330 T900,300 T1200,350 L1200,630 L0,630 Z" fill="url(#duneBack)"/>
-  <path d="M0,430 Q250,350 500,420 T1000,400 T1200,440 L1200,630 L0,630 Z" fill="url(#duneFront)"/>
-  <g fill="#2B241C" opacity="0.85">
-    <ellipse cx="860" cy="470" rx="22" ry="10"/>
-    <rect x="845" y="430" width="6" height="45"/>
-    <rect x="870" y="425" width="6" height="50"/>
-    <ellipse cx="848" cy="425" rx="10" ry="7"/>
-    <ellipse cx="873" cy="418" rx="10" ry="7"/>
-    <ellipse cx="910" cy="475" rx="20" ry="9"/>
-    <rect x="898" y="440" width="5" height="40"/>
-    <rect x="920" y="436" width="5" height="44"/>
-    <ellipse cx="900" cy="436" rx="9" ry="6"/>
-    <ellipse cx="922" cy="430" rx="9" ry="6"/>
+  <rect width="1200" height="630" fill="#ede6d6"/>
+  <circle cx="960" cy="170" r="55" fill="none" stroke="#a07c33" stroke-width="2.5"/>
+  <path d="M470,560 L470,340 C470,280 530,280 530,340 L530,560" fill="none" stroke="#1e211c" stroke-width="3"/>
+  <path d="M420,560 L420,380 Q500,290 580,380 L580,560" fill="none" stroke="#1e211c" stroke-width="3"/>
+  <line x1="380" y1="560" x2="620" y2="560" stroke="#1e211c" stroke-width="3"/>
+  <g fill="none" stroke="#445d4e" stroke-width="2">
+    <path d="M0,480 C150,440 300,470 450,450"/>
+    <path d="M600,470 C750,440 900,480 1050,450"/>
   </g>
+  <line x1="0" y1="560" x2="1200" y2="560" stroke="#8a8677" stroke-width="1" opacity="0.4"/>
 </svg>

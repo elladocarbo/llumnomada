@@ -1,14 +1,12 @@
-<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="16" cy="16" r="16" fill="#16424D"/>
-  <circle cx="16" cy="16" r="7" fill="#F4A93B"/>
-  <g stroke="#F4A93B" stroke-width="2" stroke-linecap="round">
-    <line x1="16" y1="2" x2="16" y2="6"/>
-    <line x1="16" y1="26" x2="16" y2="30"/>
-    <line x1="2" y1="16" x2="6" y2="16"/>
-    <line x1="26" y1="16" x2="30" y2="16"/>
-    <line x1="5.5" y1="5.5" x2="8.3" y2="8.3"/>
-    <line x1="23.7" y1="23.7" x2="26.5" y2="26.5"/>
-    <line x1="5.5" y1="26.5" x2="8.3" y2="23.7"/>
-    <line x1="23.7" y1="8.3" x2="26.5" y2="5.5"/>
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="60" cy="60" r="46" fill="none" stroke="#a07c33" stroke-width="2"/>
+  <g fill="none" stroke-linecap="round" stroke-width="6">
+    <path d="M60,60 C60,38 70,26 84,26 C96,26 104,34 104,44 C104,54 96,60 88,60 C82,60 78,56 78,50"
+      stroke="#445d4e" transform="rotate(0 60 60)"/>
+    <path d="M60,60 C60,38 70,26 84,26 C96,26 104,34 104,44 C104,54 96,60 88,60 C82,60 78,56 78,50"
+      stroke="#445d4e" transform="rotate(120 60 60)"/>
+    <path d="M60,60 C60,38 70,26 84,26 C96,26 104,34 104,44 C104,54 96,60 88,60 C82,60 78,56 78,50"
+      stroke="#a07c33" transform="rotate(240 60 60)"/>
   </g>
+  <circle cx="60" cy="60" r="5" fill="#1e211c"/>
 </svg>

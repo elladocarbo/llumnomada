@@ -2,7 +2,7 @@
 
 Bloc de viatges construït amb [Astro](https://astro.build). Rutes de muntanya, caps de setmana urbans i consells pràctics per viatjar lleuger, en català.
 
-Desplegat a Netlify des del repositori de GitHub: cada push a `main` genera un nou desplegament a [llumnomada.netlify.app](https://llumnomada.netlify.app).
+Desplegat a Netlify des del repositori de GitHub: cada push a `main` genera un nou desplegament a [llumnomada.com](https://llumnomada.com).
 
 ## 🚀 Estructura del projecte
 

@@ -1,35 +1,35 @@
 /*
-  Llum Nòmada — paleta inspirada en la llum d'un capvespre viatjant:
-  terracota, taronja càlid i blau petroli sobre un fons de sorra clara.
+  Llum Nòmada — sistema visual del quadern de viatge: manuscrit insular
+  i capital romana damunt vitel·la. Tinta, brezo i or vell, mai color pla.
  */
 
 :root {
-	--accent: #d9663a;
-	--accent-dark: #a84a27;
-	--accent-light: #f4a93b;
-	--petrol: #16424d;
-	--black: 43, 36, 28;
-	--gray: 122, 104, 88;
-	--gray-light: 240, 230, 216;
-	--gray-dark: 51, 43, 34;
-	--sand: #fbf3e7;
-	--gray-gradient: rgba(var(--gray-light), 60%), var(--sand);
-	--box-shadow:
-		0 2px 6px rgba(var(--gray), 20%), 0 8px 24px rgba(var(--gray), 25%),
-		0 16px 32px rgba(var(--gray), 20%);
+	--vitela: #ede6d6;
+	--vitela-mojada: #e1d8c0;
+	--tinta: #1e211c;
+	--oro-viejo: #a07c33;
+	--oro-logo: #af9052;
+	--piedra: #8a8677;
+	--verde-brezo: #445d4e;
+
+	--font-display: 'Cinzel', 'Times New Roman', serif;
+	--font-body: 'EB Garamond', Georgia, serif;
+	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+	--font-uncial: 'Uncial Antiqua', var(--font-display);
+
+	--box-shadow: 0 2px 8px rgba(30, 33, 28, 12%);
 }
 body {
-	font-family: var(--font-atkinson);
+	font-family: var(--font-body);
 	margin: 0;
 	padding: 0;
 	text-align: left;
-	background: linear-gradient(var(--gray-gradient)) no-repeat;
-	background-size: 100% 600px;
+	background: var(--vitela);
 	word-wrap: break-word;
 	overflow-wrap: break-word;
-	color: rgb(var(--gray-dark));
-	font-size: 20px;
-	line-height: 1.7;
+	color: var(--tinta);
+	font-size: 21px;
+	line-height: 1.65;
 }
 main {
 	width: 720px;
@@ -44,39 +44,61 @@ h4,
 h5,
 h6 {
 	margin: 0 0 0.5rem 0;
-	color: rgb(var(--black));
+	color: var(--tinta);
 	line-height: 1.2;
+	font-family: var(--font-display);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	font-weight: 600;
 }
 h1 {
-	font-size: 3.052em;
+	font-size: 2.7em;
 }
 h2 {
-	font-size: 2.441em;
+	font-size: 2.1em;
 }
 h3 {
-	font-size: 1.953em;
+	font-size: 1.7em;
 }
 h4 {
-	font-size: 1.563em;
+	font-size: 1.4em;
 }
 h5 {
-	font-size: 1.25em;
+	font-size: 1.1em;
 }
 strong,
 b {
-	font-weight: 700;
+	font-weight: 600;
 }
 a {
-	color: var(--accent);
+	color: var(--tinta);
+	text-decoration-color: var(--oro-viejo);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.15em;
 }
 a:hover {
-	color: var(--accent);
+	color: var(--oro-viejo);
 }
 p {
 	margin-bottom: 1em;
 }
+.prose {
+	text-align: left;
+}
 .prose p {
-	margin-bottom: 2em;
+	margin-bottom: 1.6em;
+}
+.prose em {
+	font-style: italic;
+}
+.prose > p:first-of-type::first-letter {
+	font-family: var(--font-uncial);
+	font-size: 3.4em;
+	line-height: 0.8;
+	float: left;
+	margin: 0.05em 0.1em 0 0;
+	color: var(--oro-viejo);
+	font-weight: 400;
 }
 textarea {
 	width: 100%;
@@ -91,53 +113,101 @@ table {
 img {
 	max-width: 100%;
 	height: auto;
-	border-radius: 8px;
 }
 code {
 	padding: 2px 5px;
-	background-color: rgb(var(--gray-light));
-	border-radius: 2px;
+	background-color: var(--vitela-mojada);
+	font-family: var(--font-mono);
 }
 pre {
 	padding: 1.5em;
-	border-radius: 8px;
+	background-color: var(--vitela-mojada);
 }
 pre > code {
 	all: unset;
 }
 blockquote {
-	border-left: 4px solid var(--accent);
+	border-left: 2px solid var(--oro-viejo);
 	padding: 0 0 0 20px;
-	margin: 0;
-	font-size: 1.333em;
+	margin: 1.5em 0;
+	font-size: 1.2em;
 	font-style: italic;
-	color: rgb(var(--gray));
+	color: var(--tinta);
 }
 hr {
 	border: none;
-	border-top: 1px solid rgb(var(--gray-light));
+	border-top: 1px solid var(--piedra);
+	opacity: 0.35;
 }
 
+.eyebrow {
+	font-family: var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	font-size: 0.7em;
+	color: var(--piedra);
+}
 .tag {
 	display: inline-block;
-	padding: 0.25em 0.75em;
+	padding: 0.2em 0.7em;
 	margin: 0 0.4em 0.4em 0;
-	border-radius: 999px;
-	background: rgb(var(--gray-light));
-	color: var(--accent-dark);
-	font-size: 0.75em;
-	font-weight: 700;
-	letter-spacing: 0.02em;
+	border: 1px solid var(--piedra);
+	color: var(--piedra);
+	font-family: var(--font-mono);
+	font-size: 0.65em;
+	letter-spacing: 0.04em;
 	text-transform: uppercase;
 }
 .location {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.35em;
-	color: var(--petrol);
-	font-weight: 700;
-	font-size: 0.9em;
+	color: var(--verde-brezo);
+	font-family: var(--font-mono);
+	font-size: 0.7em;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
 }
+
+/* Rombo: puntuació menor — fi d'entrada, salt d'escena */
+.ornament-rombo {
+	display: flex;
+	justify-content: center;
+	margin: 3em 0;
+	color: var(--oro-viejo);
+	font-size: 1.1em;
+}
+
+.btn {
+	display: inline-block;
+	font-family: var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	font-size: 0.8em;
+	padding: 0.9em 1.8em;
+	border-radius: 0;
+	text-decoration: none;
+}
+.btn-solid {
+	background: var(--verde-brezo);
+	color: var(--vitela);
+	border: 1px solid var(--verde-brezo);
+}
+.btn-solid:hover {
+	background: var(--tinta);
+	border-color: var(--tinta);
+	color: var(--vitela);
+}
+.btn-outline {
+	background: transparent;
+	color: var(--tinta);
+	border: 1px solid var(--tinta);
+}
+.btn-outline:hover {
+	border-color: var(--oro-viejo);
+	color: var(--oro-viejo);
+}
+
 @media (max-width: 720px) {
 	body {
 		font-size: 18px;

@@ -34,7 +34,7 @@ const { title, description, pubDate, updatedDate, heroImage, location, tags } = 
 				max-width: calc(100% - 2em);
 				margin: auto;
 				padding: 1em;
-				color: rgb(var(--gray-dark));
+				color: var(--tinta);
 			}
 			.title {
 				margin-bottom: 1em;
@@ -51,8 +51,12 @@ const { title, description, pubDate, updatedDate, heroImage, location, tags } = 
 				justify-content: center;
 				gap: 1em;
 				flex-wrap: wrap;
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+				margin-bottom: 0.8em;
+				color: var(--piedra);
+				font-family: var(--font-mono);
+				font-size: 0.7em;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
 			}
 			.tags {
 				margin-bottom: 0.5em;
@@ -74,7 +78,7 @@ const { title, description, pubDate, updatedDate, heroImage, location, tags } = 
 					<div class="title">
 						<div class="meta">
 							<FormattedDate date={pubDate} />
-							{location && <span class="location">📍 {location}</span>}
+							{location && <span class="location">{location}</span>}
 							{
 								updatedDate && (
 									<span class="last-updated-on">Actualitzat el <FormattedDate date={updatedDate} /></span>
@@ -92,6 +96,7 @@ const { title, description, pubDate, updatedDate, heroImage, location, tags } = 
 						<hr />
 					</div>
 					<slot />
+					<div class="ornament-rombo" aria-hidden="true">◆</div>
 				</div>
 			</article>
 		</main>

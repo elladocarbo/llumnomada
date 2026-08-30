@@ -17,42 +17,60 @@ const posts = (await getCollection('blog'))
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
 			.hero {
-				background: url('/images/hero-home.svg') center / cover no-repeat;
-				color: var(--sand);
-				padding: 5em 1em;
+				position: relative;
+				background: var(--tinta);
+				color: var(--vitela);
+				padding: 6em 1em;
 				text-align: center;
+				overflow: hidden;
 			}
-			.hero h1 {
-				color: var(--sand);
-				font-size: 3.2em;
-				margin-bottom: 0.2em;
+			.hero-mark {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 640px;
+				height: 640px;
+				transform: translate(-50%, -50%);
+				opacity: 0.08;
+			}
+			.hero .wordmark,
+			.hero p,
+			.hero .btn {
+				position: relative;
+			}
+			.hero .wordmark {
+				font-family: var(--font-display);
+				text-transform: uppercase;
+				letter-spacing: 0.1em;
+				line-height: 1.15;
+				margin-bottom: 0.4em;
+			}
+			.hero .wordmark .llum {
+				display: block;
+				font-size: 1.4em;
+				color: var(--vitela);
+			}
+			.hero .wordmark .nomada {
+				display: block;
+				font-size: 2.2em;
+				color: var(--oro-logo);
 			}
 			.hero p {
+				font-family: var(--font-body);
+				font-style: italic;
 				font-size: 1.3em;
-				max-width: 640px;
-				margin: 0 auto 1.5em auto;
-				opacity: 0.95;
-			}
-			.hero a.cta {
-				display: inline-block;
-				background: var(--accent);
-				color: var(--sand);
-				padding: 0.7em 1.6em;
-				border-radius: 999px;
-				text-decoration: none;
-				font-weight: 700;
-			}
-			.hero a.cta:hover {
-				background: var(--accent-dark);
+				max-width: 560px;
+				margin: 0 auto 1.8em auto;
+				opacity: 0.9;
 			}
 			.latest {
 				width: 960px;
 				max-width: calc(100% - 2em);
-				margin: 3em auto;
+				margin: 3.5em auto;
 				padding: 0 1em;
 			}
 			.latest h2 {
-				margin-bottom: 1em;
+				margin-bottom: 1.2em;
 			}
 			ul {
 				display: flex;
@@ -74,29 +92,39 @@ const posts = (await getCollection('blog'))
 				width: 100%;
 				height: 180px;
 				object-fit: cover;
-				border-radius: 12px;
-				margin-bottom: 0.5em;
+				margin-bottom: 0.6em;
 			}
 			ul li h4 {
 				margin: 0;
-				color: rgb(var(--black));
+				color: var(--tinta);
 			}
 			ul li .date {
-				margin: 0;
-				color: rgb(var(--gray));
+				margin: 0.4em 0 0 0;
+				color: var(--piedra);
+				font-family: var(--font-mono);
+				font-size: 0.7em;
+				text-transform: uppercase;
+				letter-spacing: 0.03em;
 			}
 			ul li a:hover h4 {
-				color: var(--accent);
+				color: var(--oro-viejo);
 			}
 			.see-all {
 				display: block;
 				text-align: center;
-				margin-top: 2em;
-				font-weight: 700;
+				margin-top: 2.5em;
+				font-family: var(--font-mono);
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				font-size: 0.85em;
 			}
 			@media (max-width: 720px) {
-				.hero h1 {
-					font-size: 2.2em;
+				.hero .wordmark .llum {
+					font-size: 1.1em;
+				}
+				.hero .wordmark .nomada {
+					font-size: 1.3em;
+					letter-spacing: 0.04em;
 				}
 				ul li {
 					width: 100%;
@@ -108,12 +136,29 @@ const posts = (await getCollection('blog'))
 		<Header />
 		<main style="padding: 0; width: 100%; max-width: 100%;">
 			<section class="hero">
-				<h1>☀ {SITE_TITLE}</h1>
+				<svg class="hero-mark" viewBox="0 0 120 120" aria-hidden="true">
+					<circle cx="60" cy="60" r="46" fill="none" stroke="#fbf3e7" stroke-width="1" />
+					<g fill="none" stroke="#fbf3e7" stroke-linecap="round" stroke-width="4">
+						<path
+							d="M60,60 C60,38 70,26 84,26 C96,26 104,34 104,44 C104,54 96,60 88,60 C82,60 78,56 78,50"
+							transform="rotate(0 60 60)"
+						/>
+						<path
+							d="M60,60 C60,38 70,26 84,26 C96,26 104,34 104,44 C104,54 96,60 88,60 C82,60 78,56 78,50"
+							transform="rotate(120 60 60)"
+						/>
+						<path
+							d="M60,60 C60,38 70,26 84,26 C96,26 104,34 104,44 C104,54 96,60 88,60 C82,60 78,56 78,50"
+							transform="rotate(240 60 60)"
+						/>
+					</g>
+				</svg>
+				<h1 class="wordmark"><span class="llum">Llum</span><span class="nomada">Nòmada</span></h1>
 				<p>{SITE_DESCRIPTION}</p>
-				<a class="cta" href="/blog">Descobreix les rutes</a>
+				<a class="btn btn-solid" href="/blog">Descobreix els relatos</a>
 			</section>
 			<section class="latest">
-				<h2>Darrers articles</h2>
+				<h2>Darrers relatos</h2>
 				<ul>
 					{
 						posts.map((post) => (
@@ -129,7 +174,7 @@ const posts = (await getCollection('blog'))
 						))
 					}
 				</ul>
-				<a class="see-all" href="/blog">Veure tots els articles →</a>
+				<a class="see-all" href="/blog">Veure tots els relatos →</a>
 			</section>
 		</main>
 		<Footer />
