@@ -1,5 +1,6 @@
 # Netlify local dev state (functions cache, local Blobs emulation, CLI state)
 .netlify/
+deno.lock
 
 # dependencies
 node_modules/
