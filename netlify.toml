@@ -1,0 +1,22 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[dev]
+  framework = "#static"
+  publish = "public"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/panel"
+  to = "/panel/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/blog"
+  status = 200

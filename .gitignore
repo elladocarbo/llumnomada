@@ -1,7 +1,5 @@
-# build output
-dist/
-# generated types
-.astro/
+# Netlify local dev state (functions cache, local Blobs emulation, CLI state)
+.netlify/
 
 # dependencies
 node_modules/
