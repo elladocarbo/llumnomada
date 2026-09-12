@@ -4,8 +4,12 @@ import { SEED_POSTS } from '../seed/posts.mts';
 import { SEED_SETTINGS } from '../seed/settings.mts';
 import { calcReadingMinutes } from './blocks.mts';
 
+// 'strong' consistency bypasses Netlify Blobs' own (eventual, edge-cached) read path — the
+// default silently serves stale data for an unbounded time after a write, independent of and
+// invisible to HTTP/CDN cache purges. This is a small, low-traffic dataset, so the latency
+// cost of always reading the latest write is worth never showing readers stale content.
 function blogStore() {
-  return getStore('blog');
+  return getStore('blog', { consistency: 'strong' });
 }
 
 function toIndexEntry(post: Post): IndexEntry {
