@@ -3,7 +3,13 @@ import { CACHE_TAG } from './config.mts';
 
 export function withCacheHeaders(headers: HeadersInit = {}): Headers {
   const h = new Headers(headers);
-  h.set('Netlify-CDN-Cache-Control', 'public, durable, max-age=31536000, stale-while-revalidate=60');
+  // Purge-on-publish (see purgeBlogCache below) is the primary invalidation path, but a
+  // durable, effectively-infinite max-age means any edit that a purge fails to reach (seen
+  // in practice: purge-by-tag via a regular personal access token accepted the request but
+  // never evicted an already-cached entry) stays stuck for up to a year with no fallback.
+  // A short max-age gives every edit a hard upper bound on how stale it can ever get, at
+  // the cost of a bit more origin traffic — a fine trade for a low-traffic blog.
+  h.set('Netlify-CDN-Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
   h.set('Netlify-Cache-Tag', CACHE_TAG);
   return h;
 }
