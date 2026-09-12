@@ -1,7 +1,8 @@
-export type BlockType = 'p' | 'h3' | 'q';
+export type BlockType = 'p' | 'h3' | 'q' | 'img';
 
 export interface Block {
   t: BlockType;
+  /** Rich text for p/h3/q. For 'img', the image path (e.g. "/img/<id>") — not sanitized as text. */
   h: string;
 }
 

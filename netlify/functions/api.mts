@@ -47,14 +47,21 @@ function requireAuth(request: Request): { u: string; exp: number } | Response {
   return session;
 }
 
+const IMAGE_PATH = /^\/img\/[a-zA-Z0-9-]{1,100}$/;
+
 function sanitizeBlocks(blocks: unknown): Block[] {
   if (!Array.isArray(blocks)) return [];
   return blocks
     .filter((b) => b && typeof b === 'object')
-    .map((b: any) => {
+    .map((b: any): Block | null => {
+      if (b.t === 'img') {
+        const path = String(b.h ?? '');
+        return IMAGE_PATH.test(path) ? { t: 'img', h: path } : null;
+      }
       const t = b.t === 'h3' || b.t === 'q' ? b.t : 'p';
       return { t, h: sanitizeRichText(String(b.h ?? '')) };
-    });
+    })
+    .filter((b): b is Block => b !== null);
 }
 
 function sanitizeStringArray(v: unknown, maxLen = 200): string[] {

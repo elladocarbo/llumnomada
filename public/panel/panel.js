@@ -184,16 +184,27 @@ async function renderPostList() {
 
 // ---------- Editor ----------
 function blockHtml(block) {
-  const label = { p: 'Paràgraf', h3: 'Subtítol', q: 'Cita' }[block.t] || 'Paràgraf';
-  return `<div class="block" data-t="${block.t}">
-    <div class="block-head">
+  const label = { p: 'Paràgraf', h3: 'Subtítol', q: 'Cita', img: 'Imatge' }[block.t] || 'Paràgraf';
+  const head = `<div class="block-head">
       <span>${label}</span>
       <div class="row-actions">
         <button type="button" class="secondary" data-move="up">↑</button>
         <button type="button" class="secondary" data-move="down">↓</button>
         <button type="button" class="danger" data-remove>Elimina</button>
       </div>
-    </div>
+    </div>`;
+
+  if (block.t === 'img') {
+    return `<div class="block" data-t="img">
+      ${head}
+      <img class="cover-preview block-image-preview" data-url="${escapeHtml(block.h || '')}" src="${escapeHtml(block.h || '/images/hero-home.svg')}" alt="">
+      <input type="file" class="block-image-input" accept="image/*">
+      <p class="hint block-image-hint"></p>
+    </div>`;
+  }
+
+  return `<div class="block" data-t="${block.t}">
+    ${head}
     <div class="block-body" contenteditable="true" data-t="${block.t}">${block.h || ''}</div>
     <div class="toolbar">
       <button type="button" data-wrap="strong"><strong>N</strong></button>
@@ -232,11 +243,35 @@ function wireBlockEditable(bodyEl) {
 }
 
 function wireBlockCard(cardEl, blocksList) {
-  const bodyEl = cardEl.querySelector('.block-body');
-  wireBlockEditable(bodyEl);
-  cardEl.querySelectorAll('[data-wrap]').forEach((btn) =>
-    btn.addEventListener('click', () => { bodyEl.focus(); wrapSelection(bodyEl, btn.dataset.wrap); }),
-  );
+  if (cardEl.dataset.t === 'img') {
+    const input = cardEl.querySelector('.block-image-input');
+    const preview = cardEl.querySelector('.block-image-preview');
+    const hint = cardEl.querySelector('.block-image-hint');
+    input.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      hint.textContent = 'Pujant imatge…';
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const res = await fetch('/api/images', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'error');
+        preview.src = data.url;
+        preview.dataset.url = data.url;
+        hint.textContent = 'Imatge pujada.';
+      } catch {
+        hint.textContent = "No s'ha pogut pujar la imatge (comprova que sigui una imatge de menys de 8 MB).";
+      }
+    });
+  } else {
+    const bodyEl = cardEl.querySelector('.block-body');
+    wireBlockEditable(bodyEl);
+    cardEl.querySelectorAll('[data-wrap]').forEach((btn) =>
+      btn.addEventListener('click', () => { bodyEl.focus(); wrapSelection(bodyEl, btn.dataset.wrap); }),
+    );
+  }
+
   cardEl.querySelector('[data-remove]').addEventListener('click', () => {
     cardEl.remove();
   });
@@ -294,6 +329,7 @@ async function renderEditor(id) {
       <button type="button" class="secondary" data-add="p">+ Paràgraf</button>
       <button type="button" class="secondary" data-add="h3">+ Subtítol</button>
       <button type="button" class="secondary" data-add="q">+ Cita</button>
+      <button type="button" class="secondary" data-add="img">+ Imatge</button>
     </div>
 
     <h2>Referències (opcional)</h2>
@@ -367,10 +403,14 @@ async function renderEditor(id) {
   });
 
   function collectPayload() {
-    const blocks = [...blocksListEl.querySelectorAll('.block')].map((card) => ({
-      t: card.dataset.t,
-      h: card.querySelector('.block-body').innerHTML,
-    }));
+    const blocks = [...blocksListEl.querySelectorAll('.block')]
+      .map((card) => {
+        if (card.dataset.t === 'img') {
+          return { t: 'img', h: card.querySelector('.block-image-preview').dataset.url || '' };
+        }
+        return { t: card.dataset.t, h: card.querySelector('.block-body').innerHTML };
+      })
+      .filter((b) => b.t !== 'img' || b.h);
     const refs = [...refsListEl.querySelectorAll('input')].map((i) => i.value.trim()).filter(Boolean);
     const categories = [...document.querySelectorAll('#catGrid input:checked')].map((i) => i.value);
     const status = document.querySelector('input[name=status]:checked').value;
