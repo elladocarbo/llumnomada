@@ -52,7 +52,7 @@ function shell(activeHash, bodyHtml) {
   ];
   app.innerHTML = `
     <div class="topbar">
-      <span class="brand">Llum Nòmada · Panel</span>
+      <span class="brand">Llum Nòmada · Panell</span>
       <nav>
         ${nav.map(([h, l]) => `<a href="${h}" class="${activeHash === h ? 'active' : ''}">${l}</a>`).join('')}
         <button class="logout" id="logoutBtn">Tanca sessió</button>
@@ -103,7 +103,7 @@ function renderLogin() {
   <div class="login-shell">
     <div class="login-box">
       <h1>Llum Nòmada</h1>
-      <p class="hint" style="margin-top:-0.5em">Panel de publicació</p>
+      <p class="hint" style="margin-top:-0.5em">Panell de publicació</p>
       <div id="loginError"></div>
       <form id="loginForm">
         <label for="u">Usuari</label>

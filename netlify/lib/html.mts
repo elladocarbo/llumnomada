@@ -1,8 +1,8 @@
 import type { Block, IndexEntry, Post } from './types.mts';
-import { SITE, SITE_NAME, TAGLINE, AUTHOR_NAME, CONTACT_EMAIL } from './config.mts';
+import { SITE, SITE_NAME, TAGLINE, AUTHOR_NAME, CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from './config.mts';
 import { escapeHtml } from './sanitize.mts';
 import { renderBlocks } from './blocks.mts';
-import { ABOUT_BLOCKS, ABOUT_COVER, ABOUT_DESCRIPTION, ABOUT_LEAD, ABOUT_TITLE } from '../seed/about.mts';
+import { ABOUT_BLOCKS, ABOUT_COVER, ABOUT_DESCRIPTION, ABOUT_LEAD, ABOUT_SUMMARY, ABOUT_TITLE } from '../seed/about.mts';
 
 function formatDate(iso: string): string {
   try {
@@ -74,7 +74,7 @@ function renderHeader(active?: string): string {
     <a href="/" class="brand"><img src="/favicon.svg" alt="" width="28" height="28"><span>${escapeHtml(SITE_NAME)}</span></a>
     <nav aria-label="Navegació principal">
       ${link('/', 'Inici')}
-      ${link('/blog', 'Relatos')}
+      ${link('/blog', 'Relats')}
       ${link('/about', 'Sobre mí')}
     </nav>
   </div>
@@ -91,6 +91,7 @@ function renderFooter(): string {
   <img src="/favicon.svg" alt="" width="26" height="26" style="opacity:.85">
   <p>© ${year} ${escapeHtml(SITE_NAME)}. Explicant el món, un lloc a la vegada.</p>
   <div class="footer-links">
+    <a href="${INSTAGRAM_URL}" target="_blank" rel="noopener noreferrer">${escapeHtml(INSTAGRAM_HANDLE)}</a>
     <a href="/rss.xml">RSS</a>
     <a href="mailto:${CONTACT_EMAIL}">Contacte</a>
   </div>
@@ -185,7 +186,7 @@ export function renderArticle(post: Post): string {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Inici', item: `${SITE}/` },
-          { '@type': 'ListItem', position: 2, name: 'Relatos', item: `${SITE}/blog/` },
+          { '@type': 'ListItem', position: 2, name: 'Relats', item: `${SITE}/blog/` },
           { '@type': 'ListItem', position: 3, name: post.title, item: canonical },
         ],
       },
@@ -255,12 +256,16 @@ export function renderHome(latest: IndexEntry[]): string {
     </svg>
     <h1 class="wordmark"><span class="llum">Llum</span><span class="nomada">Nòmada</span></h1>
     <p class="tagline">${escapeHtml(TAGLINE)}</p>
-    <a class="btn btn-solid" href="/blog">Descobreix els relatos</a>
+    <a class="btn btn-solid" href="/blog">Descobreix els relats</a>
+  </section>
+  <section class="about-blurb">
+    <p>${escapeHtml(ABOUT_SUMMARY)}</p>
+    <a class="see-all" href="/about">Sobre mí →</a>
   </section>
   <section class="latest">
-    <h2>Darrers relatos</h2>
+    <h2>Darrers relats</h2>
     <ul>${cards}</ul>
-    <a class="see-all" href="/blog">Veure tots els relatos →</a>
+    <a class="see-all" href="/blog">Veure tots els relats →</a>
   </section>
 </main>`;
 
@@ -296,12 +301,12 @@ export function renderBlogIndex(posts: IndexEntry[]): string {
     .join('');
 
   const body = `<main class="page-blog-index">
-  <h1>Relatos</h1>
+  <h1>Relats</h1>
   <ul>${items}</ul>
 </main>`;
 
   return renderLayout({
-    title: `Relatos — ${SITE_NAME}`,
+    title: `Relats — ${SITE_NAME}`,
     description: TAGLINE,
     canonical: `${SITE}/blog/`,
     ogImage: ogImageUrl('/images/hero-home.svg'),
