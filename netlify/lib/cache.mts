@@ -9,7 +9,7 @@ export function withCacheHeaders(headers: HeadersInit = {}): Headers {
   // never evicted an already-cached entry) stays stuck for up to a year with no fallback.
   // A short max-age gives every edit a hard upper bound on how stale it can ever get, at
   // the cost of a bit more origin traffic — a fine trade for a low-traffic blog.
-  h.set('Netlify-CDN-Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+  h.set('Netlify-CDN-Cache-Control', 'no-store');
   h.set('Netlify-Cache-Tag', CACHE_TAG);
   return h;
 }
