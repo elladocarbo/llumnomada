@@ -5,7 +5,8 @@
       "name": "llumnomada-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 8888
+      "port": 8888,
+      "autoPort": true
     }
   ]
 }
