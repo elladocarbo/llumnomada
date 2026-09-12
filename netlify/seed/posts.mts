@@ -28,9 +28,9 @@ export const SEED_POSTS: SeedPost[] = [
     lead:
       "Lisboa és una ciutat que castiga les cames i ho compensa amb escreix amb la llum. Hi vam anar per tres dies llargs, sense gaire pla més enllà de caminar, i va ser exactament el que calia.",
     blocks: [
-      h3("On vam dormir i com moure's"),
+      h3("On vam dormir i com moure’s"),
       p(
-        "Vam triar allotjament a l'Alfama, el barri més antic, tot i saber que això vol dir pujades constants. Recomanació honesta: el tramvia 28 és més aviat una atracció turística plena de gent que un mitjà de transport pràctic. Per moure's de veritat funcionen millor els funiculars (l'Elevador da Glória, per exemple) combinats amb caminar.",
+        "Vam triar allotjament a l’Alfama, el barri més antic, tot i saber que això vol dir pujades constants. Recomanació honesta: el tramvia 28 és més aviat una atracció turística plena de gent que un mitjà de transport pràctic. Per moure’s de veritat funcionen millor els funiculars (l’Elevador da Glória, per exemple) combinats amb caminar.",
       ),
       h3('Tres coses que no ens vam voler perdre'),
       p(
@@ -38,10 +38,10 @@ export const SEED_POSTS: SeedPost[] = [
       ),
       h3('La pregunta del pastel de nata'),
       p(
-        "Vam fer la comparativa \"científica\" entre els de Pastéis de Belém i els d'una pastisseria de barri a l'Alfama. Guanya Belém per la massa cruixent, però la diferència no justifica la cua d'una hora si vas curt de temps: qualsevol bon forn de la ciutat en fa un que s'hi acosta molt.",
+        "Vam fer la comparativa \"científica\" entre els de Pastéis de Belém i els d’una pastisseria de barri a l’Alfama. Guanya Belém per la massa cruixent, però la diferència no justifica la cua d’una hora si vas curt de temps: qualsevol bon forn de la ciutat en fa un que s’hi acosta molt.",
       ),
       p(
-        "Lisboa no necessita un itinerari minuciós. Necessita sabates còmodes, ganes de perdre's pels carrerons i acceptar que et perdràs alguna cosa —sempre queda una excusa per tornar-hi.",
+        "Lisboa no necessita un itinerari minuciós. Necessita sabates còmodes, ganes de perdre’s pels carrerons i acceptar que et perdràs alguna cosa —sempre queda una excusa per tornar-hi.",
       ),
     ],
     cover: '/images/hero-lisboa.svg',
@@ -57,25 +57,25 @@ export const SEED_POSTS: SeedPost[] = [
     title: 'De Marràkech al desert del Sàhara',
     categories: ['desert', 'viatge-llarg'],
     lead:
-      "El Marroc et rep amb els sentits saturats: olor d'espècies, crits dels venedors dels souks, el color de les teles penjades a cada racó de la medina. Vam passar-hi set dies: tres a Marràkech i la resta en ruta cap al desert.",
+      "El Marroc et rep amb els sentits saturats: olor d’espècies, crits dels venedors dels souks, el color de les teles penjades a cada racó de la medina. Vam passar-hi set dies: tres a Marràkech i la resta en ruta cap al desert.",
     blocks: [
-      h3("Marràkech: perdre's és el pla"),
+      h3("Marràkech: perdre’s és el pla"),
       p(
-        "La medina de Marràkech no es camina, s'hi navega. El primer dia vam intentar seguir un mapa i vam desistir abans de dinar. El segon dia vam deixar-nos portar i va ser molt millor. Un parell d'aturades que sí que val la pena buscar de forma conscient:",
+        "La medina de Marràkech no es camina, s’hi navega. El primer dia vam intentar seguir un mapa i vam desistir abans de dinar. El segon dia vam deixar-nos portar i va ser molt millor. Un parell d’aturades que sí que val la pena buscar de forma conscient:",
       ),
       p(
         '— <strong>Jardí Majorelle</strong>, un oasi de blau i verd enmig de la ciutat, sobretot recomanable a primera hora per evitar aglomeracions.<br>— <strong>Plaça Jemaa el-Fna</strong> a la posta de sol, quan els paradets de menjar comencen a muntar-se i la plaça es transforma per complet.',
       ),
       h3('La ruta cap al desert'),
       p(
-        'Vam contractar una ruta de tres dies fins a Merzouga amb parades a Aït Ben Haddou i les gorges de Todra. És un trajecte llarg amb moltes hores de furgoneta, però cada parada compensa el cansament. Aït Ben Haddou, amb les seves construccions de tapial, sembla directament un decorat de cinema (i de fet ho ha estat més d\'una vegada).',
+        'Vam contractar una ruta de tres dies fins a Merzouga amb parades a Aït Ben Haddou i les gorges de Todra. És un trajecte llarg amb moltes hores de furgoneta, però cada parada compensa el cansament. Aït Ben Haddou, amb les seves construccions de tapial, sembla directament un decorat de cinema (i de fet ho ha estat més d’una vegada).',
       ),
       q(
-        'Dormir al campament al mig de les dunes, amb el silenci absolut del desert i un cel ple d\'estrelles sense cap contaminació lumínica, va ser el moment del viatge que encara recordo amb més claredat.',
+        'Dormir al campament al mig de les dunes, amb el silenci absolut del desert i un cel ple d’estrelles sense cap contaminació lumínica, va ser el moment del viatge que encara recordo amb més claredat.',
       ),
       h3('Consells pràctics'),
       p(
-        "Porteu efectiu en dírhams per als tràmits més petits, negocieu sempre els preus als souks (és part del joc, no us ho preneu com una ofensa) i, si feu la ruta al desert a l'hivern, no subestimeu el fred nocturn: de dia fa calor, però a la nit les temperatures baixen molt.",
+        "Porteu efectiu en dírhams per als tràmits més petits, negocieu sempre els preus als souks (és part del joc, no us ho preneu com una ofensa) i, si feu la ruta al desert a l’hivern, no subestimeu el fred nocturn: de dia fa calor, però a la nit les temperatures baixen molt.",
       ),
     ],
     cover: '/images/hero-marroc.svg',
@@ -95,7 +95,7 @@ export const SEED_POSTS: SeedPost[] = [
     blocks: [
       h3('La regla que segueixo'),
       p(
-        "Abans de ficar res a la motxilla, em pregunto si ho faria servir almenys tres vegades durant el viatge. Si la resposta és no, es queda a casa. Aquesta única regla m'ha estalviat més pes que qualsevol llista.",
+        "Abans de ficar res a la motxilla, em pregunto si ho faria servir almenys tres vegades durant el viatge. Si la resposta és no, es queda a casa. Aquesta única regla m’ha estalviat més pes que qualsevol llista.",
       ),
       h3('La llista base'),
       p(
@@ -112,11 +112,11 @@ export const SEED_POSTS: SeedPost[] = [
       ),
       h3('El que sempre em sobra'),
       p(
-        "Quasi sempre és roba: torno a casa amb peces que no m'he posat ni una vegada. Per això, des de fa un parell de viatges, faig la motxilla i després en trec una peça més abans de tancar-la. Funciona més sovint del que sembla.",
+        "Quasi sempre és roba: torno a casa amb peces que no m’he posat ni una vegada. Per això, des de fa un parell de viatges, faig la motxilla i després en trec una peça més abans de tancar-la. Funciona més sovint del que sembla.",
       ),
       h3('I si fa fred?'),
       p(
-        "La clau no és portar roba d'hivern sencera, sinó capes: una samarreta tèrmica, un jersei prim i un impermeable bo abriguen més i pesen menys que un abric gruixut. És l'ajust que més diferència fa quan viatges a llocs amb climes molt diferents en un mateix trajecte.",
+        "La clau no és portar roba d’hivern sencera, sinó capes: una samarreta tèrmica, un jersei prim i un impermeable bo abriguen més i pesen menys que un abric gruixut. És l’ajust que més diferència fa quan viatges a llocs amb climes molt diferents en un mateix trajecte.",
       ),
     ],
     cover: '/images/hero-motxilla.svg',
@@ -132,7 +132,7 @@ export const SEED_POSTS: SeedPost[] = [
     title: "Tres dies caminant per Aigüestortes",
     categories: ['muntanya', 'senderisme'],
     lead:
-      "Hi ha llocs que costa explicar sense caure en el tòpic, i el Parc Nacional d'Aigüestortes i Estany de Sant Maurici n'és un. Vam fer-hi una travessa de tres dies, dormint a refugis, i em quedo sobretot amb el silenci: aquell que només es troba quan portes hores caminant i l'únic soroll és el del vent entre els estanys.",
+      "Hi ha llocs que costa explicar sense caure en el tòpic, i el Parc Nacional d’Aigüestortes i Estany de Sant Maurici n’és un. Vam fer-hi una travessa de tres dies, dormint a refugis, i em quedo sobretot amb el silenci: aquell que només es troba quan portes hores caminant i l’únic soroll és el del vent entre els estanys.",
     blocks: [
       h3('El pla'),
       p(
@@ -141,16 +141,16 @@ export const SEED_POSTS: SeedPost[] = [
       p(
         [
           '— <strong>Dia 1</strong>: Espot → Estany de Sant Maurici → Refugi Ernest Mallafré (fàcil, bona per agafar ritme)',
-          "— <strong>Dia 2</strong>: Refugi Ernest Mallafré → Portarró d'Espot → Refugi J.M. Blanc (la més exigent, amb el port com a punt alt)",
+          "— <strong>Dia 2</strong>: Refugi Ernest Mallafré → Portarró d’Espot → Refugi J.M. Blanc (la més exigent, amb el port com a punt alt)",
           '— <strong>Dia 3</strong>: Refugi J.M. Blanc → Aigüestortes → Boí (baixada llarga, cames cansades)',
         ].join('<br>'),
       ),
       h3('Coses que hauria volgut saber abans'),
       p(
-        "Reservar refugi amb setmanes d'antelació a l'estiu no és opcional. Vam trucar amb prou marge, però vam sentir més d'un grup que es va quedar sense plaça. També val la pena portar diners en efectiu: la cobertura és pràcticament inexistent i no tots els refugis accepten targeta.",
+        "Reservar refugi amb setmanes d’antelació a l’estiu no és opcional. Vam trucar amb prou marge, però vam sentir més d’un grup que es va quedar sense plaça. També val la pena portar diners en efectiu: la cobertura és pràcticament inexistent i no tots els refugis accepten targeta.",
       ),
       q(
-        "El tram del Portarró d'Espot, amb els estanys gelats a banda i banda al maig, va ser el moment que em va fer venir ganes de tornar-hi a la tardor.",
+        "El tram del Portarró d’Espot, amb els estanys gelats a banda i banda al maig, va ser el moment que em va fer venir ganes de tornar-hi a la tardor.",
       ),
       h3('Val la pena?'),
       p(
