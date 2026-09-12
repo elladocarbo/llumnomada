@@ -1,6 +1,6 @@
 import type { Block, IndexEntry, Post } from './types.mts';
 import { SITE, SITE_NAME, TAGLINE, AUTHOR_NAME, CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from './config.mts';
-import { escapeHtml } from './sanitize.mts';
+import { decodeHtmlEntities, escapeHtml } from './sanitize.mts';
 import { renderBlocks } from './blocks.mts';
 import { ABOUT_BLOCKS, ABOUT_COVER, ABOUT_DESCRIPTION, ABOUT_LEAD, ABOUT_SUMMARY, ABOUT_TITLE } from '../seed/about.mts';
 
@@ -46,11 +46,11 @@ function renderLayout(opts: LayoutOpts): string {
 <link rel="alternate" type="application/rss+xml" title="${escapeHtml(SITE_NAME)}" href="${SITE}/rss.xml">
 <link rel="canonical" href="${opts.canonical}">
 <title>${escapeHtml(opts.title)}</title>
-<meta name="description" content="${escapeHtml(opts.description)}">
+<meta name="description" content="${escapeHtml(decodeHtmlEntities(opts.description))}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="${opts.canonical}">
 <meta property="og:title" content="${escapeHtml(opts.title)}">
-<meta property="og:description" content="${escapeHtml(opts.description)}">
+<meta property="og:description" content="${escapeHtml(decodeHtmlEntities(opts.description))}">
 <meta property="og:image" content="${opts.ogImage}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -95,10 +95,9 @@ function renderFooter(): string {
     <a href="${INSTAGRAM_URL}" target="_blank" rel="noopener noreferrer">${escapeHtml(INSTAGRAM_HANDLE)}</a>
     <a href="/rss.xml">RSS</a>
     <a href="mailto:${CONTACT_EMAIL}">Contacte</a>
-    <a href="/panel" id="admin-link" hidden>Panell</a>
+    <a href="/panel">Panell</a>
   </div>
-</footer>
-<script>fetch('/api/me').then(function(r){if(r.ok)document.getElementById('admin-link').hidden=false}).catch(function(){})</script>`;
+</footer>`;
 }
 
 function tagsHtml(categories: string[]): string {
@@ -180,7 +179,7 @@ export function renderArticle(post: Post): string {
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
         headline: post.title,
-        description: post.lead.replace(/<[^>]+>/g, ''),
+        description: decodeHtmlEntities(post.lead.replace(/<[^>]+>/g, '')),
         datePublished: post.date,
         dateModified: post.updated,
         image: ogImageUrl(post.cover || '/images/hero-home.svg'),
@@ -325,7 +324,7 @@ export function renderBlogIndex(posts: IndexEntry[]): string {
 export function render404(): string {
   const body = `<main class="page-404">
   <h1>Pàgina no trobada</h1>
-  <p>Aquest camí no existeix. <a href="/">Torna a l'inici</a>.</p>
+  <p>Aquest camí no existeix. <a href="/">Torna a l’inici</a>.</p>
 </main>`;
   return renderLayout({
     title: `Pàgina no trobada — ${SITE_NAME}`,

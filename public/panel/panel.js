@@ -127,7 +127,7 @@ function renderLogin() {
     } catch (err) {
       if (err.status === 429) {
         const min = Math.ceil((err.data?.retryAfterMs || 0) / 60000);
-        errBox.innerHTML = `<div class="error">Massa intents fallits. Torna-ho a provar d'aquí a ${min} minut${min === 1 ? '' : 's'}.</div>`;
+        errBox.innerHTML = `<div class="error">Massa intents fallits. Torna-ho a provar d’aquí a ${min} minut${min === 1 ? '' : 's'}.</div>`;
       } else {
         errBox.innerHTML = `<div class="error">Usuari o contrasenya incorrectes.</div>`;
       }
@@ -261,7 +261,7 @@ function wireBlockCard(cardEl, blocksList) {
         preview.dataset.url = data.url;
         hint.textContent = 'Imatge pujada.';
       } catch {
-        hint.textContent = "No s'ha pogut pujar la imatge (comprova que sigui una imatge de menys de 8 MB).";
+        hint.textContent = "No s’ha pogut pujar la imatge (comprova que sigui una imatge de menys de 8 MB).";
       }
     });
   } else {
@@ -313,7 +313,7 @@ async function renderEditor(id) {
         ).join('')}
       </div>
 
-      <label for="fLead">Text d'entrada (lead)</label>
+      <label for="fLead">Text d’entrada (lead)</label>
       <div class="block" style="margin-bottom:1em">
         <div class="block-body" id="fLead" contenteditable="true">${post.lead || ''}</div>
         <div class="toolbar">
@@ -323,7 +323,7 @@ async function renderEditor(id) {
       </div>
     </div>
 
-    <h2>Cos de l'article</h2>
+    <h2>Cos de l’article</h2>
     <div id="blocksList"></div>
     <div class="row" style="margin-bottom:1.5em">
       <button type="button" class="secondary" data-add="p">+ Paràgraf</button>
@@ -344,7 +344,7 @@ async function renderEditor(id) {
       </div>
       <label for="fSchedule">Programar publicació (opcional)</label>
       <input type="datetime-local" id="fSchedule" value="${toLocalDatetimeValue(post.scheduledAt)}">
-      <p class="hint">Si ho omples i deixes l'estat en "Esborrany", l'article es publicarà sol quan arribi aquesta data i hora.</p>
+      <p class="hint">Si ho omples i deixes l’estat en "Esborrany", l’article es publicarà sol quan arribi aquesta data i hora.</p>
 
       <div class="row">
         <button type="button" id="saveBtn">Desa</button>
@@ -398,7 +398,7 @@ async function renderEditor(id) {
       document.getElementById('coverPreview').dataset.url = data.url;
       hint.textContent = 'Imatge pujada.';
     } catch {
-      hint.textContent = "No s'ha pogut pujar la imatge (comprova que sigui una imatge de menys de 8 MB).";
+      hint.textContent = "No s’ha pogut pujar la imatge (comprova que sigui una imatge de menys de 8 MB).";
     }
   });
 
@@ -444,7 +444,7 @@ async function renderEditor(id) {
       location.hash = `#/posts/${saved.id}/edit`;
       renderEditor(saved.id);
     } catch {
-      errBox.innerHTML = `<div class="error">No s'ha pogut desar l'article. Torna-ho a provar.</div>`;
+      errBox.innerHTML = `<div class="error">No s’ha pogut desar l’article. Torna-ho a provar.</div>`;
     }
   });
 
@@ -517,7 +517,7 @@ async function renderSettings() {
       });
       errBox.innerHTML = `<div class="hint">Ajustos desats.</div>`;
     } catch {
-      errBox.innerHTML = `<div class="error">No s'han pogut desar els ajustos.</div>`;
+      errBox.innerHTML = `<div class="error">No s’han pogut desar els ajustos.</div>`;
     }
   });
 }

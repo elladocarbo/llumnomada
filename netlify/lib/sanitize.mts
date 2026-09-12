@@ -11,6 +11,19 @@ export function escapeHtml(input: string): string {
     .replace(/'/g, '&#39;');
 }
 
+/** Reverses escapeHtml — used when text that was stored HTML-escaped (e.g. a rich-text
+ *  `lead`) needs to go back into a plain-text context (a `content="…"` meta attribute,
+ *  JSON-LD) that will itself be escaped/serialized. Without this, escaping already-escaped
+ *  text double-encodes it (`&#39;` becomes `&amp;#39;`). Order matters: `&amp;` last. */
+export function decodeHtmlEntities(input: string): string {
+	return String(input ?? '')
+		.replace(/&#39;/g, "'")
+		.replace(/&quot;/g, '"')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&amp;/g, '&');
+}
+
 /**
  * Allowlist sanitizer for rich-text block content: only <strong>, <em> and <br> survive,
  * always without attributes. Everything else — including any other tag or a smuggled
