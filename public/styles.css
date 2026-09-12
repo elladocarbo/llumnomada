@@ -178,18 +178,18 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
 @media (max-width: 720px) { .latest li { width: 100%; } }
 
 /* Blog index */
-.page-blog-index main { width: 960px; max-width: calc(100% - 2em); }
-.page-blog-index h1 { text-align: center; margin-bottom: 1.5em; }
-.page-blog-index ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2rem; }
-.page-blog-index li { width: calc(50% - 1rem); }
-.page-blog-index li.featured { width: 100%; text-align: center; }
-.page-blog-index a { text-decoration: none; color: var(--tinta); display: block; }
-.page-blog-index img { width: 100%; height: 240px; object-fit: cover; box-shadow: var(--box-shadow); }
-.page-blog-index li.featured img { height: 340px; }
-.page-blog-index h4.title { margin-top: 0.7em; }
-.page-blog-index li.featured h4.title { font-size: 2rem; }
-.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-family: var(--font-mono); font-size: 0.7em; color: var(--piedra); text-transform: uppercase; margin-top: 0.4em; }
-@media (max-width: 720px) { .page-blog-index li, .page-blog-index li.featured { width: 100%; } }
+main.page-blog-index { width: 960px; max-width: calc(100% - 2em); }
+main.page-blog-index h1 { text-align: center; margin-bottom: 1.5em; }
+main.page-blog-index ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2rem; }
+main.page-blog-index li { width: calc(50% - 1rem); }
+main.page-blog-index li.featured { width: 100%; text-align: center; }
+main.page-blog-index a { text-decoration: none; color: var(--tinta); display: block; }
+main.page-blog-index img { width: 100%; height: 240px; object-fit: cover; box-shadow: var(--box-shadow); }
+main.page-blog-index li.featured img { height: 340px; }
+main.page-blog-index h4.title { margin-top: 0.7em; }
+main.page-blog-index li.featured h4.title { font-size: 2rem; }
+main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-family: var(--font-mono); font-size: 0.7em; color: var(--piedra); text-transform: uppercase; margin-top: 0.4em; }
+@media (max-width: 720px) { main.page-blog-index li, main.page-blog-index li.featured { width: 100%; } }
 
 /* Article */
 .page-article main { width: calc(100% - 2em); max-width: 100%; margin: 0; padding: 0; }
