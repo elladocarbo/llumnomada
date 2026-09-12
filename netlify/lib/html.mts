@@ -94,8 +94,10 @@ function renderFooter(): string {
     <a href="${INSTAGRAM_URL}" target="_blank" rel="noopener noreferrer">${escapeHtml(INSTAGRAM_HANDLE)}</a>
     <a href="/rss.xml">RSS</a>
     <a href="mailto:${CONTACT_EMAIL}">Contacte</a>
+    <a href="/panel" id="admin-link" hidden>Panell</a>
   </div>
-</footer>`;
+</footer>
+<script>fetch('/api/me').then(function(r){if(r.ok)document.getElementById('admin-link').hidden=false}).catch(function(){})</script>`;
 }
 
 function tagsHtml(categories: string[]): string {

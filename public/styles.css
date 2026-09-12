@@ -76,6 +76,9 @@ hr { border: none; border-top: 1px solid var(--piedra); opacity: 0.35; }
 
 blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margin: 1.5em 0; font-size: 1.2em; font-style: italic; color: var(--tinta); }
 
+.prose-image { margin: 2em 0; }
+.prose-image img { width: 100%; height: auto; display: block; box-shadow: var(--box-shadow); }
+
 .eyebrow { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.7em; color: var(--piedra); }
 .tag { display: inline-block; padding: 0.2em 0.7em; margin: 0 0.4em 0.4em 0; border: 1px solid var(--piedra); color: var(--piedra); font-family: var(--font-mono); font-size: 0.65em; letter-spacing: 0.04em; text-transform: uppercase; }
 .location { display: inline-flex; align-items: center; gap: 0.35em; color: var(--verde-brezo); font-family: var(--font-mono); font-size: 0.7em; letter-spacing: 0.03em; text-transform: uppercase; }

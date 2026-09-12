@@ -7,7 +7,7 @@ function stripTags(html: string): string {
 }
 
 export function calcReadingMinutes(lead: string, blocks: Block[]): number {
-  const words = [lead, ...blocks.map((b) => b.h)]
+  const words = [lead, ...blocks.filter((b) => b.t !== 'img').map((b) => b.h)]
     .map(stripTags)
     .join(' ')
     .trim()
@@ -17,7 +17,8 @@ export function calcReadingMinutes(lead: string, blocks: Block[]): number {
 }
 
 /** Renders a post's block list to article-body HTML. Block `h` is expected to already be
- *  sanitized (only strong/em/br) by sanitize.mts at write time — this does not re-sanitize. */
+ *  sanitized (only strong/em/br, or a validated /img/ path for 'img') by sanitize.mts at
+ *  write time — this does not re-sanitize. */
 export function renderBlocks(blocks: Block[]): string {
   return blocks
     .map((block) => {
@@ -26,6 +27,8 @@ export function renderBlocks(blocks: Block[]): string {
           return `<h3>${block.h}</h3>`;
         case 'q':
           return `<blockquote>${block.h}</blockquote>`;
+        case 'img':
+          return `<figure class="prose-image"><img src="${block.h}" alt="" loading="lazy"></figure>`;
         case 'p':
         default:
           return `<p>${block.h}</p>`;

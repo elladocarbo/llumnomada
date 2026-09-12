@@ -76,6 +76,9 @@ th { color: #857f6c; font-weight: 600; font-size: 0.75em; text-transform: upperc
 .checkbox-grid input { margin: 0; }
 
 .cover-preview { width: 220px; height: 140px; object-fit: cover; border-radius: 4px; display: block; margin-bottom: 0.6em; background: #eee; }
+.block .block-image-preview { margin: 0.8em; }
+.block .block-image-input { margin: 0 0.8em 0.4em; }
+.block .block-image-hint { margin: 0 0.8em 0.8em; }
 
 .refs-list li { display: flex; gap: 0.5em; margin-bottom: 0.5em; align-items: center; }
 .refs-list input { flex: 1; margin: 0; }
