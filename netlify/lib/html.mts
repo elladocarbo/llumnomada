@@ -60,6 +60,7 @@ function renderLayout(opts: LayoutOpts): string {
 ${opts.jsonLd ? jsonLdScript(opts.jsonLd) : ''}
 </head>
 <body class="${opts.bodyClass}">
+<div class="watermark" aria-hidden="true"><img src="/favicon.svg" alt=""></div>
 ${renderHeader(opts.activeNav)}
 ${opts.bodyHtml}
 ${renderFooter()}
@@ -153,12 +154,15 @@ function renderArticleBody(a: ArticleLike): string {
 
 export function renderArticle(post: Post): string {
   const canonical = `${SITE}/blog/${post.slug}/`;
+  // Roma's post gets a slightly richer treatment (photo frames, darker page background) —
+  // scoped by slug rather than applied site-wide, since it's the only post with inline photos so far.
+  const bodyClass = post.slug === 'roma-la-citta-eterna' ? 'page-article page-roma' : 'page-article';
   return renderLayout({
     title: `${post.title} — ${SITE_NAME}`,
     description: post.lead.replace(/<[^>]+>/g, '').slice(0, 200),
     canonical,
     ogImage: ogImageUrl(post.cover || '/images/hero-home.svg'),
-    bodyClass: 'page-article',
+    bodyClass,
     activeNav: '/blog',
     bodyHtml: renderArticleBody({
       title: post.title,
