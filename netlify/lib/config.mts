@@ -12,8 +12,6 @@ export const SESSION_TTL_SECONDS = 7 * 24 * 3600;
 export const LOGIN_MAX_FAILS = 5;
 export const LOGIN_LOCKOUT_MS = 15 * 60 * 1000;
 
-export const CACHE_TAG = 'blog';
-
 export const DEFAULT_CATEGORIES = [
   'muntanya',
   'senderisme',
