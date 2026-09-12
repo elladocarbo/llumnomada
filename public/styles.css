@@ -76,8 +76,45 @@ hr { border: none; border-top: 1px solid var(--piedra); opacity: 0.35; }
 
 blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margin: 1.5em 0; font-size: 1.2em; font-style: italic; color: var(--tinta); }
 
-.prose-image { margin: 2em 0; }
-.prose-image img { width: 100%; height: auto; display: block; box-shadow: var(--box-shadow); }
+.prose-image {
+  display: inline-block;
+  vertical-align: top;
+  width: 30%;
+  margin: 0.6em 1.5% 1.4em;
+}
+.prose-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  box-shadow: var(--box-shadow);
+  border-style: solid;
+  border-width: 12px;
+  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cdefs%3E%3Cpattern id='k' width='20' height='15' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 15 V7 H6 V11 H12 V3 H20' fill='none' stroke='%23a07c33' stroke-width='2.6' stroke-linecap='square'/%3E%3C/pattern%3E%3Cpattern id='kv' width='15' height='20' patternUnits='userSpaceOnUse'%3E%3Cpath d='M15 0 H7 V6 H11 V12 H3 V20' fill='none' stroke='%23a07c33' stroke-width='2.6' stroke-linecap='square'/%3E%3C/pattern%3E%3C/defs%3E%3Crect x='0' y='0' width='60' height='15' fill='url(%23k)'/%3E%3Crect x='0' y='45' width='60' height='15' fill='url(%23k)'/%3E%3Crect x='0' y='15' width='15' height='30' fill='url(%23kv)'/%3E%3Crect x='45' y='15' width='15' height='30' fill='url(%23kv)'/%3E%3Crect x='0' y='0' width='15' height='15' fill='%23a07c33'/%3E%3Crect x='45' y='0' width='15' height='15' fill='%23a07c33'/%3E%3Crect x='0' y='45' width='15' height='15' fill='%23a07c33'/%3E%3Crect x='45' y='45' width='15' height='15' fill='%23a07c33'/%3E%3C/svg%3E");
+  border-image-slice: 15 fill;
+  border-image-repeat: round;
+  background: var(--vitela);
+}
+.prose-image-link { display: block; cursor: zoom-in; }
+
+/* Pure-CSS lightbox: the thumbnail links to #lightbox-N, :target reveals the fullscreen overlay. */
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 4em 1.5em;
+  background: rgba(30, 33, 28, 0.92);
+  cursor: zoom-out;
+}
+.lightbox:target { display: flex; }
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 8px 30px rgba(0, 0, 0, 40%); }
+
+/* Watermark: faint site mark fixed on every page */
+.watermark { position: fixed; right: 1.2em; bottom: 1.2em; width: 96px; height: 96px; opacity: 0.07; pointer-events: none; z-index: 1; }
+.watermark img { width: 100%; height: 100%; display: block; }
+@media (max-width: 600px) { .watermark { width: 58px; height: 58px; right: 0.7em; bottom: 0.7em; } }
 
 .eyebrow { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.7em; color: var(--piedra); }
 .tag { display: inline-block; padding: 0.2em 0.7em; margin: 0 0.4em 0.4em 0; border: 1px solid var(--piedra); color: var(--piedra); font-family: var(--font-mono); font-size: 0.65em; letter-spacing: 0.04em; text-transform: uppercase; }
@@ -121,6 +158,10 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
 .hero .wordmark .llum { display: block; font-size: 1.4em; color: var(--vitela); }
 .hero .wordmark .nomada { display: block; font-size: 2.2em; color: var(--oro-logo); }
 .hero .tagline { position: relative; font-style: italic; font-family: var(--font-body); font-size: 1.3em; max-width: 560px; margin: 1em auto 2em; color: var(--vitela); }
+@media (max-width: 720px) {
+  .hero .wordmark .llum { font-size: 1.1em; }
+  .hero .wordmark .nomada { font-size: 1.3em; letter-spacing: 0.02em; }
+}
 .about-blurb { width: 640px; max-width: calc(100% - 2em); margin: 3.5em auto 0; text-align: center; }
 .about-blurb p { font-style: italic; font-size: 1.15em; line-height: 1.7; }
 .about-blurb .see-all { margin-top: 0.5em; }
@@ -161,6 +202,9 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
 
 .refs { font-family: var(--font-mono); font-size: 0.75em; color: var(--piedra); border-top: 1px solid var(--piedra); padding-top: 1.5em; margin-top: 2em; }
 .refs li { margin-bottom: 0.5em; }
+
+/* "ROMA: la Città Eterna" — darker parchment behind the reading column, to suit its photos */
+.page-roma .prose { background: var(--vitela-mojada); box-shadow: 0 0 40px rgba(30, 33, 28, 10%) inset; }
 
 /* 404 */
 .page-404 main { text-align: center; padding: 6em 1em; }
