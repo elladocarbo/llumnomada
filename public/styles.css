@@ -65,6 +65,10 @@ hr { border: none; border-top: 1px solid var(--piedra); opacity: 0.35; }
 .prose { text-align: left; }
 .prose p { margin-bottom: 1.6em; }
 .prose em { font-style: italic; }
+
+/* Photo captions: a paragraph whose entire content is a single <em> — authored that way
+   deliberately in the editor to mark it as a caption, not inferred from its position. */
+.prose > p:has(> em:only-child) { font-size: 0.85em; }
 .prose > p:first-of-type::first-letter {
   font-family: var(--font-uncial);
   font-size: 3.4em;
