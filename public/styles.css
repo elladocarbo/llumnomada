@@ -9,6 +9,7 @@
   --oro-logo: #af9052;
   --piedra: #8a8677;
   --verde-brezo: #445d4e;
+  --blau-mari-clar: #c7d5e6;
 
   --font-display: 'Cinzel', 'Times New Roman', serif;
   --font-body: 'EB Garamond', Georgia, serif;
@@ -79,7 +80,6 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
 .prose-image {
   display: inline-block;
   vertical-align: top;
-  width: 80%;
   margin: 0.6em 1.5% 1.4em;
 }
 .prose-image img {
@@ -88,13 +88,25 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
   display: block;
   box-shadow: var(--box-shadow);
   border-style: solid;
+}
+.prose-image-link { display: block; cursor: zoom-in; }
+
+/* Photo frame + size are per-article (each relat can carry its own decorative treatment). */
+.page-roma .prose-image { width: 80%; }
+.page-roma .prose-image img {
   border-width: 13px;
   border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cdefs%3E%3Cpattern id='dm' width='10' height='15' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0,15 V5 H5 V10 H10 V0' fill='none' stroke='%23a07c33' stroke-width='0.9'/%3E%3Cpath d='M2.25,11.625 V6.125 H5 V8.875 H7.75 V3.375' fill='none' stroke='%23a07c33' stroke-width='0.9'/%3E%3C/pattern%3E%3Cpattern id='dmv' width='15' height='10' patternUnits='userSpaceOnUse'%3E%3Cpath d='M15,0 H5 V5 H10 V10 H0' fill='none' stroke='%23a07c33' stroke-width='0.9'/%3E%3Cpath d='M11.625,2.25 H6.125 V5 H8.875 V7.75 H3.375' fill='none' stroke='%23a07c33' stroke-width='0.9'/%3E%3C/pattern%3E%3C/defs%3E%3Crect x='0' y='0' width='60' height='15' fill='url(%23dm)'/%3E%3Crect x='0' y='45' width='60' height='15' fill='url(%23dm)'/%3E%3Crect x='0' y='0' width='15' height='60' fill='url(%23dmv)'/%3E%3Crect x='45' y='0' width='15' height='60' fill='url(%23dmv)'/%3E%3C/svg%3E");
   border-image-slice: 15 fill;
   border-image-repeat: round;
 }
-.prose-image-link { display: block; cursor: zoom-in; }
-.prose-image-link { display: block; cursor: zoom-in; }
+
+.page-copenhagen .prose-image { width: 40%; }
+.page-copenhagen .prose-image img {
+  border-width: 12px;
+  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cdefs%3E%3Cpattern id='rp' width='20' height='15' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0,7.5 Q5,0 10,7.5 Q15,15 20,7.5' fill='none' stroke='%23af9052' stroke-width='1.4'/%3E%3Cpath d='M0,7.5 Q5,15 10,7.5 Q15,0 20,7.5' fill='none' stroke='%23af9052' stroke-width='1.4'/%3E%3C/pattern%3E%3Cpattern id='rpv' width='15' height='20' patternUnits='userSpaceOnUse'%3E%3Cpath d='M7.5,0 Q0,5 7.5,10 Q15,15 7.5,20' fill='none' stroke='%23af9052' stroke-width='1.4'/%3E%3Cpath d='M7.5,0 Q15,5 7.5,10 Q0,15 7.5,20' fill='none' stroke='%23af9052' stroke-width='1.4'/%3E%3C/pattern%3E%3C/defs%3E%3Crect x='0' y='0' width='60' height='15' fill='url(%23rp)'/%3E%3Crect x='0' y='45' width='60' height='15' fill='url(%23rp)'/%3E%3Crect x='0' y='0' width='15' height='60' fill='url(%23rpv)'/%3E%3Crect x='45' y='0' width='15' height='60' fill='url(%23rpv)'/%3E%3C/svg%3E");
+  border-image-slice: 15 fill;
+  border-image-repeat: round;
+}
 
 /* Pure-CSS lightbox: the thumbnail links to #lightbox-N, :target reveals the fullscreen overlay. */
 .lightbox {
@@ -205,6 +217,9 @@ main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-
 
 /* "ROMA: la Città Eterna" — darker parchment behind the reading column, to suit its photos */
 .page-roma .prose { background: var(--vitela-mojada); box-shadow: 0 0 40px rgba(30, 33, 28, 10%) inset; }
+
+/* "Copenhagen: la ciutat de les mil punxes" — light marine-blue reading column */
+.page-copenhagen .prose { background: var(--blau-mari-clar); box-shadow: 0 0 40px rgba(30, 33, 28, 10%) inset; }
 
 /* 404 */
 .page-404 main { text-align: center; padding: 6em 1em; }

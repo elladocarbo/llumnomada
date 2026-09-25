@@ -151,11 +151,17 @@ function renderArticleBody(a: ArticleLike): string {
 </main>`;
 }
 
+// A few posts carry their own decorative treatment (photo frame, page background), scoped by
+// slug rather than applied site-wide — each one is a deliberate one-off, not a general feature.
+const ARTICLE_THEME_BY_SLUG: Record<string, string> = {
+  'roma-la-citta-eterna': 'page-roma',
+  'copenhagen-la-ciutat-de-les-mil-punxes': 'page-copenhagen',
+};
+
 export function renderArticle(post: Post): string {
   const canonical = `${SITE}/blog/${post.slug}/`;
-  // Roma's post gets a slightly richer treatment (photo frames, darker page background) —
-  // scoped by slug rather than applied site-wide, since it's the only post with inline photos so far.
-  const bodyClass = post.slug === 'roma-la-citta-eterna' ? 'page-article page-roma' : 'page-article';
+  const theme = post.slug ? ARTICLE_THEME_BY_SLUG[post.slug] : undefined;
+  const bodyClass = theme ? `page-article ${theme}` : 'page-article';
   return renderLayout({
     title: `${post.title} — ${SITE_NAME}`,
     description: post.lead.replace(/<[^>]+>/g, '').slice(0, 200),
