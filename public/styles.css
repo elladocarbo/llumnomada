@@ -219,6 +219,16 @@ main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-
 .refs { font-family: var(--font-mono); font-size: 0.75em; color: var(--piedra); border-top: 1px solid var(--piedra); padding-top: 1.5em; margin-top: 2em; }
 .refs li { margin-bottom: 0.5em; }
 
+/* Mobile: the desktop percentages (44% / 80% of an already narrow column) leave thumbnails
+   too small and the frame too heavy, so photos become a centred, near-full-width block with a
+   proportionally thinner frame. */
+@media (max-width: 720px) {
+  .page-roma .prose-image,
+  .page-copenhagen .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
+  .page-roma .prose-image img,
+  .page-copenhagen .prose-image img { border-width: 9px; }
+}
+
 /* "ROMA: la Città Eterna" — darker parchment behind the reading column, to suit its photos */
 .page-roma .prose { background: var(--vitela-mojada); box-shadow: 0 0 40px rgba(30, 33, 28, 10%) inset; }
 
