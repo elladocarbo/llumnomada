@@ -55,7 +55,7 @@ function renderLayout(opts: LayoutOpts): string {
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;600&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;600&family=Uncial+Antiqua&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 ${opts.jsonLd ? jsonLdScript(opts.jsonLd) : ''}
 </head>
@@ -156,6 +156,7 @@ function renderArticleBody(a: ArticleLike): string {
 const ARTICLE_THEME_BY_SLUG: Record<string, string> = {
   'roma-la-citta-eterna': 'page-roma',
   'copenhagen-la-ciutat-de-les-mil-punxes': 'page-copenhagen',
+  'motxilla-viatjar-lleuger': 'page-motxilla',
 };
 
 export function renderArticle(post: Post): string {
