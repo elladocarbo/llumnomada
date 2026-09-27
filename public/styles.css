@@ -10,11 +10,13 @@
   --piedra: #8a8677;
   --verde-brezo: #445d4e;
   --blau-mari-clar: #c7d5e6;
+  --crema-suau: #f6efdf;
 
   --font-display: 'Cinzel', 'Times New Roman', serif;
   --font-body: 'EB Garamond', Georgia, serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --font-uncial: 'Uncial Antiqua', var(--font-display);
+  --font-handwritten: 'Kalam', 'Comic Sans MS', cursive;
 
   --box-shadow: 0 2px 8px rgba(30, 33, 28, 12%);
 }
@@ -234,6 +236,29 @@ main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-
 
 /* "Copenhagen: la ciutat de les mil punxes" — light marine-blue reading column */
 .page-copenhagen .prose { background: var(--blau-mari-clar); box-shadow: 0 0 40px rgba(30, 33, 28, 10%) inset; }
+
+/* "Com faig la motxilla per viatjar lleuger" — soft cream page + handwritten-look body text,
+   like notes jotted in a travel notebook. Title stays in the site's display font on purpose. */
+.page-motxilla .prose { background: var(--crema-suau); box-shadow: 0 0 40px rgba(30, 33, 28, 8%) inset; }
+.page-motxilla .prose p,
+.page-motxilla .prose blockquote,
+.page-motxilla .prose h3 {
+  font-family: var(--font-handwritten);
+}
+.page-motxilla .prose p,
+.page-motxilla .prose blockquote {
+  font-size: 1.15em;
+  line-height: 1.55;
+}
+.page-motxilla .prose h3 {
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+}
+.page-motxilla .prose > p:first-of-type::first-letter {
+  font-family: var(--font-handwritten);
+  font-weight: 700;
+}
 
 /* 404 */
 .page-404 main { text-align: center; padding: 6em 1em; }
