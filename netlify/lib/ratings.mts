@@ -17,8 +17,11 @@ export interface RatingSummary {
 
 const EMPTY: RatingSummary = { counts: [0, 0, 0, 0, 0], total: 0, avg: 0 };
 
+// Strong consistency: a vote is immediately followed by a redirect back to the article, which
+// re-reads this same summary — the default eventually-consistent read can still show the
+// pre-vote count right after casting it, which looks like the vote silently failed.
 function ratingsStore() {
-  return getStore('ratings');
+  return getStore({ name: 'ratings', consistency: 'strong' });
 }
 
 /** Stable (non-time-boxed) anonymized voter key: same visitor + same post always hashes the
