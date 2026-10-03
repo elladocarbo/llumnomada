@@ -141,9 +141,22 @@ interface RatingProps {
 function renderRatingSection(rating: RatingProps): string {
   const { postId, summary, voted } = rating;
 
-  const legendHtml = RATING_LEGEND.map(
-    (text, i) => `<li><span class="stars" aria-hidden="true">${'★'.repeat(i + 1)}</span> ${escapeHtml(text)}</li>`,
-  ).join('');
+  // The stars that precede each line of the legend ARE the vote control — no separate row of
+  // buttons. Once voted, they go back to being plain (non-interactive) stars.
+  const legendItems = RATING_LEGEND.map((text, i) => {
+    const n = i + 1;
+    const glyphs = '★'.repeat(n);
+    const starsHtml = voted
+      ? `<span class="stars" aria-hidden="true">${glyphs}</span>`
+      : `<button type="submit" name="stars" value="${n}" class="stars" aria-label="${n} ${n === 1 ? 'estrella' : 'estrelles'} — ${escapeHtml(text)}">${glyphs}</button>`;
+    return `<li>${starsHtml} ${escapeHtml(text)}</li>`;
+  }).join('');
+
+  const legendHtml = voted
+    ? `<ol class="rating-legend">${legendItems}</ol>`
+    : `<form method="post" action="/api/rate/${encodeURIComponent(postId)}">
+      <ol class="rating-legend">${legendItems}</ol>
+    </form>`;
 
   const resultHtml =
     summary.total > 0
@@ -153,22 +166,11 @@ function renderRatingSection(rating: RatingProps): string {
     </p>`
       : '';
 
-  const actionHtml = voted
-    ? `<p class="rating-thanks">Gràcies pel teu vot!</p>`
-    : `<form method="post" action="/api/rate/${encodeURIComponent(postId)}" class="rating-form">
-      ${[1, 2, 3, 4, 5]
-        .map(
-          (n) =>
-            `<button type="submit" name="stars" value="${n}" aria-label="${n} ${n === 1 ? 'estrella' : 'estrelles'} — ${escapeHtml(RATING_LEGEND[n - 1])}">${'★'.repeat(n)}</button>`,
-        )
-        .join('')}
-    </form>`;
-
   return `<section class="rating">
     <h3>Et fa ganes, aquest viatge?</h3>
-    <ol class="rating-legend">${legendHtml}</ol>
+    ${legendHtml}
     ${resultHtml}
-    ${actionHtml}
+    ${voted ? `<p class="rating-thanks">Gràcies pel teu vot!</p>` : ''}
   </section>`;
 }
 
