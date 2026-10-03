@@ -141,21 +141,22 @@ interface RatingProps {
 function renderRatingSection(rating: RatingProps): string {
   const { postId, summary, voted } = rating;
 
-  // The stars that precede each line of the legend ARE the vote control — no separate row of
-  // buttons. Once voted, they go back to being plain (non-interactive) stars.
-  const legendItems = RATING_LEGEND.map((text, i) => {
+  // Two aligned columns — stars (the vote control) on the left, legend text on the right — laid
+  // out as a table so rows stay in sync even when a legend line wraps onto two lines. Once voted,
+  // the stars go back to being plain (non-interactive) glyphs.
+  const rows = RATING_LEGEND.map((text, i) => {
     const n = i + 1;
     const glyphs = '★'.repeat(n);
-    const starsHtml = voted
+    const starHtml = voted
       ? `<span class="stars" aria-hidden="true">${glyphs}</span>`
       : `<button type="submit" name="stars" value="${n}" class="stars" aria-label="${n} ${n === 1 ? 'estrella' : 'estrelles'} — ${escapeHtml(text)}">${glyphs}</button>`;
-    return `<li>${starsHtml} ${escapeHtml(text)}</li>`;
+    return `<tr><td>${starHtml}</td><td>${escapeHtml(text)}</td></tr>`;
   }).join('');
 
   const legendHtml = voted
-    ? `<ol class="rating-legend">${legendItems}</ol>`
+    ? `<table class="rating-table"><tbody>${rows}</tbody></table>`
     : `<form method="post" action="/api/rate/${encodeURIComponent(postId)}">
-      <ol class="rating-legend">${legendItems}</ol>
+      <table class="rating-table"><tbody>${rows}</tbody></table>
     </form>`;
 
   const resultHtml =

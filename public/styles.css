@@ -224,40 +224,38 @@ main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-
 /* Reader rating — a CSS-only (no JS) 1-5 star vote, one per visitor, form-submitted. */
 .rating { text-align: center; margin-top: 1em; }
 .rating h3 { font-size: 1.3em; }
-.rating-legend {
-  list-style: none;
+.rating-table {
   margin: 1em auto 1.5em;
-  padding: 0;
   max-width: 420px;
+  width: 100%;
+  border-collapse: collapse;
   text-align: left;
   font-family: var(--font-mono);
   font-size: 0.75em;
   color: var(--piedra);
-  line-height: 1.9;
 }
-/* Earlier, the extra touch-area on the star button came from padding offset by a negative
-   margin, to avoid shifting the layout. With rows only ~0.2em apart, that negative margin made
-   each button's padded box bleed into the *next* row and sit underneath it in paint order, so a
-   tap that looked like it landed on a star actually hit the next <li> instead — silently
-   swallowed, since a <li> isn't interactive. Real padding on the <li> itself avoids that: it
-   pushes rows apart for real, instead of faking the extra space. */
-.rating-legend li { display: flex; align-items: center; gap: 0.6em; padding: 0.55em 0; }
-.rating-legend .stars {
-  display: inline-block;
-  flex: none;
-  width: 6.5em;
+.rating-table td { vertical-align: middle; }
+.rating-table td:first-child { width: 5.5em; }
+.rating-table td:last-child { padding: 0.55em 0; }
+/* The tap target's real padding lives on the star glyph itself (button or span), not on a
+   surrounding wrapper — a negative-margin trick to fake extra touch area without it bled into
+   neighbouring rows and silently swallowed taps there. Real padding on the interactive element
+   keeps the visible spacing and the hit box the same box. */
+.rating-table .stars {
+  display: block;
+  box-sizing: border-box;
+  padding: 0.55em 0.6em 0.55em 0;
   color: var(--oro-viejo);
   letter-spacing: 0.05em;
 }
 button.stars {
+  width: 100%;
   background: none;
   border: none;
-  padding: 0.3em 0.3em;
   margin: 0;
   font: inherit;
   font-size: 1.15em;
   text-align: left;
-  line-height: 1;
   cursor: pointer;
   touch-action: manipulation;
 }
