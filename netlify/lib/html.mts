@@ -135,27 +135,26 @@ function refsHtml(refs?: string[]): string {
 interface RatingProps {
   postId: string;
   summary: RatingSummary;
-  voted: boolean;
+  /** null = hasn't voted; 0 = voted, value unknown (legacy); 1-5 = current vote. */
+  myVote: number | null;
 }
 
 function renderRatingSection(rating: RatingProps): string {
-  const { postId, summary, voted } = rating;
+  const { postId, summary, myVote } = rating;
+  const voted = myVote !== null;
 
   // Two aligned columns — stars (the vote control) on the left, legend text on the right — laid
-  // out as a table so rows stay in sync even when a legend line wraps onto two lines. Once voted,
-  // the stars go back to being plain (non-interactive) glyphs.
+  // out as a table so rows stay in sync even when a legend line wraps onto two lines. The stars
+  // stay clickable after voting so the visitor can change their vote; their current one is marked.
   const rows = RATING_LEGEND.map((text, i) => {
     const n = i + 1;
     const glyphs = '★'.repeat(n);
-    const starHtml = voted
-      ? `<span class="stars" aria-hidden="true">${glyphs}</span>`
-      : `<button type="submit" name="stars" value="${n}" class="stars" aria-label="${n} ${n === 1 ? 'estrella' : 'estrelles'} — ${escapeHtml(text)}">${glyphs}</button>`;
-    return `<tr><td>${starHtml}</td><td>${escapeHtml(text)}</td></tr>`;
+    const mine = myVote === n;
+    const starHtml = `<button type="submit" name="stars" value="${n}" class="stars${mine ? ' mine' : ''}"${mine ? ' aria-pressed="true"' : ''} aria-label="${n} ${n === 1 ? 'estrella' : 'estrelles'} — ${escapeHtml(text)}">${glyphs}</button>`;
+    return `<tr${mine ? ' class="mine"' : ''}><td>${starHtml}</td><td>${escapeHtml(text)}</td></tr>`;
   }).join('');
 
-  const legendHtml = voted
-    ? `<table class="rating-table"><tbody>${rows}</tbody></table>`
-    : `<form method="post" action="/api/rate/${encodeURIComponent(postId)}">
+  const legendHtml = `<form method="post" action="/api/rate/${encodeURIComponent(postId)}">
       <table class="rating-table"><tbody>${rows}</tbody></table>
     </form>`;
 
@@ -171,7 +170,7 @@ function renderRatingSection(rating: RatingProps): string {
     <h3>Et fa ganes, aquest viatge?</h3>
     ${legendHtml}
     ${resultHtml}
-    ${voted ? `<p class="rating-thanks">Gràcies pel teu vot!</p>` : ''}
+    ${voted ? `<p class="rating-thanks">Gràcies pel teu vot! Si vols, pots tornar a triar una altra puntuació.</p>` : ''}
   </section>`;
 }
 

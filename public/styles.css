@@ -263,6 +263,8 @@ button.stars:hover,
 button.stars:focus-visible {
   color: var(--verde-brezo);
 }
+.rating-table tr.mine td:last-child { color: var(--tinta); font-weight: 600; }
+.rating-table tr.mine .stars { color: var(--verde-brezo); }
 .rating-result { font-family: var(--font-mono); font-size: 0.85em; color: var(--tinta); margin-bottom: 1em; }
 .rating-result .stars-display { color: var(--oro-viejo); font-size: 1.3em; letter-spacing: 0.05em; margin-right: 0.3em; }
 .rating-thanks { font-style: italic; color: var(--verde-brezo); }

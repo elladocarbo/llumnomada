@@ -36,31 +36,40 @@ export async function getSummary(postId: string): Promise<RatingSummary> {
   return summary ?? EMPTY;
 }
 
-export async function hasVoted(postId: string, ip: string, secret: string): Promise<boolean> {
+/** The visitor's current vote: 1-5, 0 if they voted before votes recorded their value, null if they haven't voted. */
+export async function getMyVote(postId: string, ip: string, secret: string): Promise<number | null> {
   const store = ratingsStore();
-  const key = `voters/${postId}/${voterHash(postId, ip, secret)}`;
-  const seen = await store.get(key);
-  return seen != null;
+  const seen = await store.get(`voters/${postId}/${voterHash(postId, ip, secret)}`);
+  if (seen == null) return null;
+  const m = /^s([1-5])$/.exec(seen);
+  return m ? Number(m[1]) : 0;
 }
 
-/** Records a 1-5 vote for a post. No-ops (returns the unchanged summary) if this visitor has
- *  already voted on this post, or if `stars` is out of range. */
+/** Records a 1-5 vote for a post, or changes this visitor's earlier vote. */
 export async function castVote(postId: string, ip: string, secret: string, stars: number): Promise<RatingSummary> {
   if (!Number.isInteger(stars) || stars < 1 || stars > 5) return getSummary(postId);
 
   const store = ratingsStore();
   const voterKey = `voters/${postId}/${voterHash(postId, ip, secret)}`;
-  const { modified } = await store.set(voterKey, '1', { onlyIfNew: true });
-  if (!modified) return getSummary(postId);
-
   const summary = await getSummary(postId);
   const counts = [...summary.counts] as RatingSummary['counts'];
-  counts[stars - 1] += 1;
-  const total = summary.total + 1;
-  const sum = counts.reduce((acc, c, i) => acc + c * (i + 1), 0);
-  const avg = total > 0 ? sum / total : 0;
-  const next: RatingSummary = { counts, total, avg };
+  let total = summary.total;
 
+  const prev = await getMyVote(postId, ip, secret);
+  if (prev === stars) return summary;
+  if (prev !== null) {
+    // Legacy votes didn't store their value; with a single vote on the post it is the average.
+    const old = prev > 0 ? prev : total === 1 ? Math.round(summary.avg) : 0;
+    if (old === 0) return summary;
+    counts[old - 1] -= 1;
+  } else {
+    total += 1;
+  }
+  counts[stars - 1] += 1;
+
+  const sum = counts.reduce((acc, c, i) => acc + c * (i + 1), 0);
+  const next: RatingSummary = { counts, total, avg: total > 0 ? sum / total : 0 };
+  await store.set(voterKey, `s${stars}`);
   await store.setJSON(`summary/${postId}`, next);
   return next;
 }
