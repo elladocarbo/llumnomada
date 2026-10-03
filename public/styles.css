@@ -235,27 +235,31 @@ main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-
   color: var(--piedra);
   line-height: 1.9;
 }
-.rating-legend .stars { display: inline-block; width: 6.5em; color: var(--oro-viejo); letter-spacing: 0.05em; }
+.rating-legend li { display: flex; align-items: baseline; gap: 0.6em; margin-bottom: 0.2em; }
+.rating-legend .stars {
+  display: inline-block;
+  flex: none;
+  width: 6.5em;
+  color: var(--oro-viejo);
+  letter-spacing: 0.05em;
+}
+/* The stars doubling as the vote button: reset button chrome so they read as plain glyphs. */
+button.stars {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+button.stars:hover,
+button.stars:focus-visible {
+  color: var(--verde-brezo);
+}
 .rating-result { font-family: var(--font-mono); font-size: 0.85em; color: var(--tinta); margin-bottom: 1em; }
 .rating-result .stars-display { color: var(--oro-viejo); font-size: 1.3em; letter-spacing: 0.05em; margin-right: 0.3em; }
 .rating-thanks { font-style: italic; color: var(--verde-brezo); }
-.rating-form { display: flex; justify-content: center; gap: 0.4em; flex-direction: row-reverse; }
-.rating-form button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.6em;
-  line-height: 1;
-  color: var(--piedra);
-  padding: 0.1em 0.05em;
-  letter-spacing: 0.04em;
-}
-.rating-form button:hover,
-.rating-form button:hover ~ button,
-.rating-form button:focus-visible,
-.rating-form button:focus-visible ~ button {
-  color: var(--oro-viejo);
-}
 
 /* Mobile: the desktop percentages (44% / 80% of an already narrow column) leave thumbnails
    too small and the frame too heavy, so photos become a centred, near-full-width block with a
