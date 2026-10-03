@@ -221,6 +221,42 @@ main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-
 .refs { font-family: var(--font-mono); font-size: 0.75em; color: var(--piedra); border-top: 1px solid var(--piedra); padding-top: 1.5em; margin-top: 2em; }
 .refs li { margin-bottom: 0.5em; }
 
+/* Reader rating — a CSS-only (no JS) 1-5 star vote, one per visitor, form-submitted. */
+.rating { text-align: center; margin-top: 1em; }
+.rating h3 { font-size: 1.3em; }
+.rating-legend {
+  list-style: none;
+  margin: 1em auto 1.5em;
+  padding: 0;
+  max-width: 420px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  color: var(--piedra);
+  line-height: 1.9;
+}
+.rating-legend .stars { display: inline-block; width: 6.5em; color: var(--oro-viejo); letter-spacing: 0.05em; }
+.rating-result { font-family: var(--font-mono); font-size: 0.85em; color: var(--tinta); margin-bottom: 1em; }
+.rating-result .stars-display { color: var(--oro-viejo); font-size: 1.3em; letter-spacing: 0.05em; margin-right: 0.3em; }
+.rating-thanks { font-style: italic; color: var(--verde-brezo); }
+.rating-form { display: flex; justify-content: center; gap: 0.4em; flex-direction: row-reverse; }
+.rating-form button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.6em;
+  line-height: 1;
+  color: var(--piedra);
+  padding: 0.1em 0.05em;
+  letter-spacing: 0.04em;
+}
+.rating-form button:hover,
+.rating-form button:hover ~ button,
+.rating-form button:focus-visible,
+.rating-form button:focus-visible ~ button {
+  color: var(--oro-viejo);
+}
+
 /* Mobile: the desktop percentages (44% / 80% of an already narrow column) leave thumbnails
    too small and the frame too heavy, so photos become a centred, near-full-width block with a
    proportionally thinner frame. */

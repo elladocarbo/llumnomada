@@ -5,6 +5,7 @@ import { renderHome, renderBlogIndex, renderArticle, renderAbout, render404, ren
 import { withCacheHeaders } from '../lib/cache.mts';
 import { getClientIp } from '../lib/auth.mts';
 import { recordHit } from '../lib/hits.mts';
+import { getSummary, hasVoted } from '../lib/ratings.mts';
 
 const CANONICAL_HOST = 'llumnomada.com';
 
@@ -71,7 +72,9 @@ export default async (request: Request, context: Context) => {
   if (blogMatch) {
     const post = await getPostBySlug(blogMatch[1]);
     if (!post || post.status !== 'published') return html(render404(), 404);
-    return html(renderArticle(post));
+    const ip = getClientIp(request, context);
+    const [summary, voted] = await Promise.all([getSummary(post.id), hasVoted(post.id, ip, sessionSecret)]);
+    return html(renderArticle(post, { postId: post.id, summary, voted }));
   }
 
   return html(render404(), 404);
