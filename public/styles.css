@@ -117,9 +117,9 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
 
 .page-irlanda .prose-image { width: 80%; }
 .page-irlanda .prose-image img {
-  border-width: 19px;
+  border-width: 32px;
   border-image-source: url("/frame-celtic.png");
-  border-image-slice: 38 fill;
+  border-image-slice: 114 fill;
   border-image-repeat: round;
 }
 
@@ -287,7 +287,7 @@ button.stars:focus-visible {
   .page-irlanda .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
   .page-roma .prose-image img,
   .page-copenhagen .prose-image img { border-width: 9px; }
-  .page-irlanda .prose-image img { border-width: 13px; }
+  .page-irlanda .prose-image img { border-width: 22px; }
 }
 
 /* "ROMA: la Città Eterna" — darker parchment behind the reading column, to suit its photos */
