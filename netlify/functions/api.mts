@@ -15,6 +15,7 @@ import { sanitizeRichText } from '../lib/sanitize.mts';
 import { renderPreview } from '../lib/html.mts';
 import { purgeBlogCache, noStoreHeaders } from '../lib/cache.mts';
 import { getStats } from '../lib/hits.mts';
+import { castVote } from '../lib/ratings.mts';
 import type { Block, Post, Settings } from '../lib/types.mts';
 import { SESSION_TTL_SECONDS } from '../lib/config.mts';
 
@@ -115,6 +116,39 @@ export default async (request: Request, context: Context) => {
       status: 200,
       headers: noStoreHeaders({ 'content-type': 'application/json', 'set-cookie': clearSessionCookieHeader(secureCookie) }),
     });
+  }
+
+  // Public: any reader can rate a post, no login needed. One vote per visitor per post,
+  // enforced server-side by an anonymized IP hash (see ratings.mts) — never stores the raw IP.
+  const rateMatch = path.match(/^\/rate\/([^/]+)$/);
+  if (rateMatch && method === 'POST') {
+    const postId = rateMatch[1];
+    const secret = process.env.SESSION_SECRET;
+    let stars = 0;
+    try {
+      const form = await request.formData();
+      stars = Number(form.get('stars'));
+    } catch {
+      // ignore malformed submissions — just redirect back without recording a vote
+    }
+    if (secret) {
+      await castVote(postId, getClientIp(request, context), secret, stars);
+    }
+    // Redirect back to the referring page's *path* only — never the raw header value, which a
+    // scripted (non-browser) request could set to an arbitrary off-site URL (open-redirect).
+    // postId is the post's internal id, not its slug, so a missing/foreign referer falls back
+    // to the listing rather than guessing a URL.
+    let back = '/blog';
+    const referer = request.headers.get('referer');
+    if (referer) {
+      try {
+        const refUrl = new URL(referer);
+        if (refUrl.origin === url.origin) back = refUrl.pathname + refUrl.search;
+      } catch {
+        // malformed referer — keep the safe default
+      }
+    }
+    return new Response(null, { status: 303, headers: noStoreHeaders({ location: back }) });
   }
 
   // Everything past this point requires a valid session.

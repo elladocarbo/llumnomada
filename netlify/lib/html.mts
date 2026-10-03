@@ -3,6 +3,7 @@ import { SITE, SITE_NAME, TAGLINE, AUTHOR_NAME, CONTACT_EMAIL, INSTAGRAM_HANDLE,
 import { decodeHtmlEntities, escapeHtml } from './sanitize.mts';
 import { renderBlocks } from './blocks.mts';
 import { ABOUT_BLOCKS, ABOUT_COVER, ABOUT_DESCRIPTION, ABOUT_LEAD, ABOUT_SUMMARY, ABOUT_TITLE } from '../seed/about.mts';
+import { RATING_LEGEND, type RatingSummary } from './ratings.mts';
 
 function formatDate(iso: string): string {
   try {
@@ -131,7 +132,47 @@ function refsHtml(refs?: string[]): string {
   return `<ol class="refs">${refs.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ol>`;
 }
 
-function renderArticleBody(a: ArticleLike): string {
+interface RatingProps {
+  postId: string;
+  summary: RatingSummary;
+  voted: boolean;
+}
+
+function renderRatingSection(rating: RatingProps): string {
+  const { postId, summary, voted } = rating;
+
+  const legendHtml = RATING_LEGEND.map(
+    (text, i) => `<li><span class="stars" aria-hidden="true">${'★'.repeat(i + 1)}</span> ${escapeHtml(text)}</li>`,
+  ).join('');
+
+  const resultHtml =
+    summary.total > 0
+      ? `<p class="rating-result">
+      <span class="stars-display" aria-hidden="true">${'★'.repeat(Math.round(summary.avg))}${'☆'.repeat(5 - Math.round(summary.avg))}</span>
+      <strong>${summary.avg.toFixed(1)}/5</strong> · ${summary.total} ${summary.total === 1 ? 'vot' : 'vots'}
+    </p>`
+      : '';
+
+  const actionHtml = voted
+    ? `<p class="rating-thanks">Gràcies pel teu vot!</p>`
+    : `<form method="post" action="/api/rate/${encodeURIComponent(postId)}" class="rating-form">
+      ${[1, 2, 3, 4, 5]
+        .map(
+          (n) =>
+            `<button type="submit" name="stars" value="${n}" aria-label="${n} ${n === 1 ? 'estrella' : 'estrelles'} — ${escapeHtml(RATING_LEGEND[n - 1])}">${'★'.repeat(n)}</button>`,
+        )
+        .join('')}
+    </form>`;
+
+  return `<section class="rating">
+    <h3>Et fa ganes, aquest viatge?</h3>
+    <ol class="rating-legend">${legendHtml}</ol>
+    ${resultHtml}
+    ${actionHtml}
+  </section>`;
+}
+
+function renderArticleBody(a: ArticleLike, rating?: RatingProps): string {
   return `<main class="page-article">
 <article>
   ${a.cover ? `<div class="hero-image"><img src="${escapeHtml(a.cover)}" alt=""></div>` : ''}
@@ -146,6 +187,7 @@ function renderArticleBody(a: ArticleLike): string {
     ${renderBlocks(a.blocks)}
     ${refsHtml(a.refs)}
     <div class="ornament-rombo" aria-hidden="true">◆</div>
+    ${rating ? renderRatingSection(rating) : ''}
   </div>
 </article>
 </main>`;
@@ -159,7 +201,7 @@ const ARTICLE_THEME_BY_SLUG: Record<string, string> = {
   'motxilla-viatjar-lleuger': 'page-motxilla',
 };
 
-export function renderArticle(post: Post): string {
+export function renderArticle(post: Post, rating?: RatingProps): string {
   const canonical = `${SITE}/blog/${post.slug}/`;
   const theme = post.slug ? ARTICLE_THEME_BY_SLUG[post.slug] : undefined;
   const bodyClass = theme ? `page-article ${theme}` : 'page-article';
@@ -170,17 +212,20 @@ export function renderArticle(post: Post): string {
     ogImage: ogImageUrl(post.cover || '/images/hero-home.svg'),
     bodyClass,
     activeNav: '/blog',
-    bodyHtml: renderArticleBody({
-      title: post.title,
-      lead: post.lead,
-      blocks: post.blocks,
-      cover: post.cover,
-      categories: post.categories,
-      location: post.location,
-      date: post.date,
-      updated: post.updated,
-      refs: post.refs,
-    }),
+    bodyHtml: renderArticleBody(
+      {
+        title: post.title,
+        lead: post.lead,
+        blocks: post.blocks,
+        cover: post.cover,
+        categories: post.categories,
+        location: post.location,
+        date: post.date,
+        updated: post.updated,
+        refs: post.refs,
+      },
+      rating,
+    ),
     jsonLd: [
       {
         '@context': 'https://schema.org',
