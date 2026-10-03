@@ -235,7 +235,7 @@ main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-
   color: var(--piedra);
   line-height: 1.9;
 }
-.rating-legend li { display: flex; align-items: baseline; gap: 0.6em; margin-bottom: 0.2em; }
+.rating-legend li { display: flex; align-items: center; gap: 0.6em; margin-bottom: 0.2em; }
 .rating-legend .stars {
   display: inline-block;
   flex: none;
@@ -243,15 +243,20 @@ main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-
   color: var(--oro-viejo);
   letter-spacing: 0.05em;
 }
-/* The stars doubling as the vote button: reset button chrome so they read as plain glyphs. */
+/* The stars doubling as the vote button: reset button chrome so they read as plain glyphs, but
+   keep a real touch-sized hit area (min ~44px tall per the usual mobile guideline) via padding
+   offset by a matching negative margin, so the bigger tap target doesn't shove the layout. */
 button.stars {
   background: none;
   border: none;
-  padding: 0;
-  margin: 0;
+  padding: 0.65em 0.4em;
+  margin: -0.65em -0.4em;
   font: inherit;
+  font-size: 1.15em;
   text-align: left;
+  line-height: 1;
   cursor: pointer;
+  touch-action: manipulation;
 }
 button.stars:hover,
 button.stars:focus-visible {
