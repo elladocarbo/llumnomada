@@ -201,6 +201,7 @@ const ARTICLE_THEME_BY_SLUG: Record<string, string> = {
   'roma-la-citta-eterna': 'page-roma',
   'copenhagen-la-ciutat-de-les-mil-punxes': 'page-copenhagen',
   'motxilla-viatjar-lleuger': 'page-motxilla',
+  'irlanda-l-illa-maragda': 'page-irlanda',
 };
 
 export function renderArticle(post: Post, rating?: RatingProps): string {

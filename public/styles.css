@@ -11,6 +11,7 @@
   --verde-brezo: #445d4e;
   --blau-mari-clar: #c7d5e6;
   --crema-suau: #f6efdf;
+  --verd-maragda: #5ac98a;
 
   --font-display: 'Cinzel', 'Times New Roman', serif;
   --font-body: 'EB Garamond', Georgia, serif;
@@ -111,6 +112,14 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
   border-width: 13px;
   border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cdefs%3E%3Cpattern id='rp' width='20' height='15' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0,7.5 Q5,0 10,7.5 Q15,15 20,7.5' fill='none' stroke='%23af9052' stroke-width='1.4'/%3E%3Cpath d='M0,7.5 Q5,15 10,7.5 Q15,0 20,7.5' fill='none' stroke='%23af9052' stroke-width='1.4'/%3E%3C/pattern%3E%3Cpattern id='rpv' width='15' height='20' patternUnits='userSpaceOnUse'%3E%3Cpath d='M7.5,0 Q0,5 7.5,10 Q15,15 7.5,20' fill='none' stroke='%23af9052' stroke-width='1.4'/%3E%3Cpath d='M7.5,0 Q15,5 7.5,10 Q0,15 7.5,20' fill='none' stroke='%23af9052' stroke-width='1.4'/%3E%3C/pattern%3E%3C/defs%3E%3Crect x='0' y='0' width='60' height='15' fill='url(%23rp)'/%3E%3Crect x='0' y='45' width='60' height='15' fill='url(%23rp)'/%3E%3Crect x='0' y='0' width='15' height='60' fill='url(%23rpv)'/%3E%3Crect x='45' y='0' width='15' height='60' fill='url(%23rpv)'/%3E%3C/svg%3E");
   border-image-slice: 15 fill;
+  border-image-repeat: round;
+}
+
+.page-irlanda .prose-image { width: 80%; }
+.page-irlanda .prose-image img {
+  border-width: 19px;
+  border-image-source: url("/frame-celtic.png");
+  border-image-slice: 38 fill;
   border-image-repeat: round;
 }
 
@@ -274,9 +283,11 @@ button.stars:focus-visible {
    proportionally thinner frame. */
 @media (max-width: 720px) {
   .page-roma .prose-image,
-  .page-copenhagen .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
+  .page-copenhagen .prose-image,
+  .page-irlanda .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
   .page-roma .prose-image img,
   .page-copenhagen .prose-image img { border-width: 9px; }
+  .page-irlanda .prose-image img { border-width: 13px; }
 }
 
 /* "ROMA: la Città Eterna" — darker parchment behind the reading column, to suit its photos */
@@ -284,6 +295,18 @@ button.stars:focus-visible {
 
 /* "Copenhagen: la ciutat de les mil punxes" — light marine-blue reading column */
 .page-copenhagen .prose { background: var(--blau-mari-clar); box-shadow: 0 0 40px rgba(30, 33, 28, 10%) inset; }
+
+/* "Irlanda: l'illa Maragda" — emerald-green reading column; the muted grey-green used for small
+   print elsewhere would wash out on it, so those texts are darkened here. */
+.page-irlanda .prose { background: var(--verd-maragda); box-shadow: 0 0 40px rgba(20, 50, 30, 18%) inset; }
+.page-irlanda .prose .meta,
+.page-irlanda .prose .meta *,
+.page-irlanda .refs,
+.page-irlanda .rating-table,
+.page-irlanda .rating-result { color: var(--tinta); }
+.page-irlanda .prose a { color: var(--tinta); }
+.page-irlanda .rating-table .stars { color: #7a5416; }
+.page-irlanda .rating-thanks { color: #143a24; }
 
 /* "Com faig la motxilla per viatjar lleuger" — soft cream page + handwritten-look body text,
    like notes jotted in a travel notebook. Title stays in the site's display font on purpose. */
