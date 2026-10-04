@@ -1,7 +1,7 @@
 import type { Context } from '@netlify/functions';
 import { getStore } from '@netlify/blobs';
 import { listIndex, getPostBySlug } from '../lib/store.mts';
-import { renderHome, renderBlogIndex, renderArticle, renderAbout, render404, renderRss, renderSitemap } from '../lib/html.mts';
+import { renderHome, renderBlogIndex, renderDestinations, renderArticle, renderAbout, render404, renderRss, renderSitemap } from '../lib/html.mts';
 import { withCacheHeaders } from '../lib/cache.mts';
 import { getClientIp } from '../lib/auth.mts';
 import { recordHit } from '../lib/hits.mts';
@@ -42,6 +42,25 @@ export default async (request: Request, context: Context) => {
   if (path === '/blog') {
     const index = (await listIndex()).filter((p) => p.status === 'published');
     return html(renderBlogIndex(index));
+  }
+
+  if (path === '/destinacions') {
+    const index = (await listIndex()).filter((p) => p.status === 'published');
+    return html(renderDestinations(index));
+  }
+
+  const categoryMatch = path.match(/^\/categoria\/([^/]+)$/);
+  if (categoryMatch) {
+    let category = '';
+    try {
+      category = decodeURIComponent(categoryMatch[1]);
+    } catch {
+      return html(render404(), 404);
+    }
+    const all = (await listIndex()).filter((p) => p.status === 'published');
+    const posts = all.filter((p) => p.categories?.includes(category));
+    if (!posts.length) return html(render404(), 404);
+    return html(renderBlogIndex(posts, all, category));
   }
 
   if (path === '/about') {

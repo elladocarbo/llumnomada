@@ -167,6 +167,8 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
 
 .eyebrow { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.7em; color: var(--piedra); }
 .tag { display: inline-block; padding: 0.2em 0.7em; margin: 0 0.4em 0.4em 0; border: 1px solid var(--piedra); color: var(--piedra); font-family: var(--font-mono); font-size: 0.65em; letter-spacing: 0.04em; text-transform: uppercase; }
+a.tag { text-decoration: none; }
+a.tag:hover { border-color: var(--oro-viejo); color: var(--tinta); }
 .location { display: inline-flex; align-items: center; gap: 0.35em; color: var(--verde-brezo); font-family: var(--font-mono); font-size: 0.7em; letter-spacing: 0.03em; text-transform: uppercase; }
 .ornament-rombo { display: flex; justify-content: center; margin: 3em 0; color: var(--oro-viejo); font-size: 1.1em; }
 
@@ -237,6 +239,15 @@ main.page-blog-index img { width: 100%; height: 240px; object-fit: cover; box-sh
 main.page-blog-index li.featured img { height: 340px; }
 main.page-blog-index h4.title { margin-top: 0.7em; }
 main.page-blog-index li.featured h4.title { font-size: 2rem; }
+main.page-blog-index .intro { text-align: center; margin: -1em 0 1.5em; font-style: italic; }
+main.page-blog-index .chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5em; margin: 0 0 2em; }
+main.page-blog-index .chips a { display: inline-block; padding: 0.3em 0.9em; border: 1px solid var(--piedra); font-family: var(--font-mono); font-size: 0.7em; letter-spacing: 0.04em; text-transform: uppercase; color: var(--piedra); }
+main.page-blog-index .chips a:hover, main.page-blog-index .chips a.current { border-color: var(--oro-viejo); color: var(--tinta); background: rgba(160, 124, 51, 12%); }
+main.page-blog-index .destination { margin-bottom: 3em; scroll-margin-top: 1em; }
+main.page-blog-index .destination h2 { margin-bottom: 1em; padding-bottom: 0.3em; border-bottom: 1px solid rgba(138, 134, 119, 40%); }
+main.page-blog-index .destination h2 span, main.page-blog-index .by-theme { font-family: var(--font-mono); }
+main.page-blog-index .destination h2 span { font-size: 0.4em; font-weight: 400; letter-spacing: 0.04em; color: var(--piedra); text-transform: uppercase; margin-left: 0.6em; }
+main.page-blog-index .by-theme { text-align: center; font-size: 1.1em; margin: 2em 0 1em; }
 main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-family: var(--font-mono); font-size: 0.7em; color: var(--piedra); text-transform: uppercase; margin-top: 0.4em; }
 @media (max-width: 720px) { main.page-blog-index li, main.page-blog-index li.featured { width: 100%; } }
 

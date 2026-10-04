@@ -26,6 +26,8 @@ export interface Post {
   cover: string;
   refs: string[];
   location: string;
+  /** Country, used to group relats on the "Destinacions" page. Empty for non-destination posts. */
+  country?: string;
   date: string;
   updated: string;
   status: 'draft' | 'published';

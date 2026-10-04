@@ -214,6 +214,7 @@ export default async (request: Request, context: Context) => {
       reading: existing?.reading ?? 1,
       // Scripts that re-save a post without sending 'info' must not wipe it; the panel always sends it.
       info: body.info === undefined ? existing?.info : sanitizeInfo(body.info),
+      country: body.country === undefined ? existing?.country : String(body.country).replace(/[<>]/g, '').trim().slice(0, 80),
     };
 
     const saved = await savePost(post);
