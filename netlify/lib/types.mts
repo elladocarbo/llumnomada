@@ -8,6 +8,14 @@ export interface Block {
   alt?: string;
 }
 
+/** Optional "practical sheet" shown under the title; every field is plain text and optional. */
+export interface PostInfo {
+  days?: string;
+  season?: string;
+  budget?: string;
+  transport?: string;
+}
+
 export interface Post {
   id: string;
   slug: string | null;
@@ -23,9 +31,10 @@ export interface Post {
   status: 'draft' | 'published';
   scheduledAt: string | null;
   reading: number;
+  info?: PostInfo;
 }
 
-export type IndexEntry = Omit<Post, 'blocks' | 'refs'>;
+export type IndexEntry = Omit<Post, 'blocks' | 'refs' | 'info'>;
 
 export interface Settings {
   instagram: string;

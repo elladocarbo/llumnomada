@@ -16,7 +16,7 @@ import { renderPreview } from '../lib/html.mts';
 import { purgeBlogCache, noStoreHeaders } from '../lib/cache.mts';
 import { getStats } from '../lib/hits.mts';
 import { castVote } from '../lib/ratings.mts';
-import type { Block, Post, Settings } from '../lib/types.mts';
+import type { Block, Post, PostInfo, Settings } from '../lib/types.mts';
 import { SESSION_TTL_SECONDS } from '../lib/config.mts';
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -65,6 +65,18 @@ function sanitizeBlocks(blocks: unknown): Block[] {
       return { t, h: sanitizeRichText(String(b.h ?? '')) };
     })
     .filter((b): b is Block => b !== null);
+}
+
+const INFO_KEYS = ['days', 'season', 'budget', 'transport'] as const;
+
+function sanitizeInfo(v: unknown): PostInfo | undefined {
+  if (!v || typeof v !== 'object') return undefined;
+  const out: PostInfo = {};
+  for (const key of INFO_KEYS) {
+    const text = String((v as Record<string, unknown>)[key] ?? '').replace(/[<>]/g, '').replace(/s+/g, ' ').trim().slice(0, 200);
+    if (text) out[key] = text;
+  }
+  return Object.keys(out).length ? out : undefined;
 }
 
 function sanitizeStringArray(v: unknown, maxLen = 200): string[] {
@@ -200,6 +212,8 @@ export default async (request: Request, context: Context) => {
       status: body.status === 'published' ? 'published' : 'draft',
       scheduledAt: body.scheduledAt ? String(body.scheduledAt) : null,
       reading: existing?.reading ?? 1,
+      // Scripts that re-save a post without sending 'info' must not wipe it; the panel always sends it.
+      info: body.info === undefined ? existing?.info : sanitizeInfo(body.info),
     };
 
     const saved = await savePost(post);
@@ -232,6 +246,7 @@ export default async (request: Request, context: Context) => {
       date: body.date ? String(body.date) : new Date().toISOString(),
       updated: new Date().toISOString(),
       refs: sanitizeStringArray(body.refs, 500),
+      info: sanitizeInfo(body.info),
     });
     return new Response(html, { headers: noStoreHeaders({ 'content-type': 'text/html; charset=utf-8' }) });
   }

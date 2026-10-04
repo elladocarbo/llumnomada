@@ -249,6 +249,29 @@ main.page-blog-index .meta { display: flex; gap: 1em; align-items: center; font-
 .page-article .title .meta { display: flex; justify-content: center; align-items: center; gap: 1em; font-family: var(--font-mono); text-transform: uppercase; font-size: 0.7em; color: var(--piedra); flex-wrap: wrap; }
 .page-article .title .tags { margin-top: 1em; }
 
+.reading { font-family: var(--font-mono); font-size: 0.7em; letter-spacing: 0.03em; text-transform: uppercase; }
+
+/* Practical sheet, table of contents and previous/next links — plain HTML, no JS. */
+.trip-info { margin: 0 0 1.8em; padding: 1em 1.3em; border: 1px solid rgba(30, 33, 28, 25%); background: rgba(255, 255, 255, 35%); font-family: var(--font-mono); font-size: 0.75em; line-height: 1.5; }
+.trip-info h2 { margin: 0 0 0.7em; font-size: 1.1em; }
+.trip-info dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.4em 1.2em; margin: 0; }
+.trip-info dl > div { display: contents; }
+.trip-info dt { font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--verde-brezo); }
+.trip-info dd { margin: 0; }
+.toc { margin: 0 0 2em; border-left: 2px solid var(--oro-viejo); padding-left: 1em; }
+.toc summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.85em; }
+.toc summary span { font-family: var(--font-mono); font-weight: 400; text-transform: none; font-size: 0.85em; color: var(--piedra); }
+.toc ol { margin: 0.8em 0 0; padding-left: 1.4em; font-size: 0.85em; line-height: 1.5; }
+.toc li { margin-bottom: 0.3em; }
+.prose h3[id] { scroll-margin-top: 1em; }
+.post-nav { display: flex; gap: 1em; margin-top: 2.5em; padding-top: 1.5em; border-top: 1px solid rgba(30, 33, 28, 25%); }
+.post-nav a { flex: 1 1 0; display: flex; flex-direction: column; gap: 0.3em; padding: 0.9em 1em; border: 1px solid rgba(30, 33, 28, 25%); text-decoration: none; }
+.post-nav a:hover { border-color: var(--oro-viejo); }
+.post-nav a span { font-family: var(--font-mono); font-size: 0.7em; letter-spacing: 0.04em; text-transform: uppercase; color: var(--verde-brezo); }
+.post-nav a strong { font-family: var(--font-display); font-size: 0.85em; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.3; }
+.post-nav a.next { text-align: right; margin-left: auto; }
+@media (max-width: 720px) { .post-nav { flex-direction: column; } .trip-info dl { grid-template-columns: 1fr; gap: 0.1em; } .trip-info dd { margin-bottom: 0.5em; } }
+
 .refs { font-family: var(--font-mono); font-size: 0.75em; color: var(--piedra); border-top: 1px solid var(--piedra); padding-top: 1.5em; margin-top: 2em; }
 .refs li { margin-bottom: 0.5em; }
 
@@ -321,6 +344,9 @@ button.stars:focus-visible {
 /* "Irlanda: l'illa Maragda" — emerald-green reading column; the muted grey-green used for small
    print elsewhere would wash out on it, so those texts are darkened here. */
 .page-irlanda .prose { background: var(--verd-maragda); box-shadow: 0 0 40px rgba(20, 50, 30, 18%) inset; }
+.page-irlanda .trip-info dt,
+.page-irlanda .toc summary span,
+.page-irlanda .post-nav a span { color: #143a24; }
 .page-irlanda .prose .meta,
 .page-irlanda .prose .meta *,
 .page-irlanda .refs,

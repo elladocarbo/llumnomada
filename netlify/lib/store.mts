@@ -13,9 +13,10 @@ function blogStore() {
 }
 
 function toIndexEntry(post: Post): IndexEntry {
-  const { blocks, refs, ...rest } = post;
+  const { blocks, refs, info, ...rest } = post;
   void blocks;
   void refs;
+  void info;
   return rest;
 }
 
