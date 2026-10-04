@@ -5,6 +5,7 @@ import { renderBlocks, renderToc } from './blocks.mts';
 import { ABOUT_BLOCKS, ABOUT_COVER, ABOUT_DESCRIPTION, ABOUT_LEAD, ABOUT_SUMMARY, ABOUT_TITLE } from '../seed/about.mts';
 import { RATING_LEGEND, type RatingSummary } from './ratings.mts';
 import { imageSrcset, imageUrl } from './images.mts';
+import { MAP_H, MAP_W, mapView, projectLatLon } from './worldmap.mts';
 
 // Responsive WebP copies of an uploaded cover image (see images.mts); static SVGs pass through.
 function coverImg(cover: string, widths: number[], sizes: string, extra = ''): string {
@@ -464,6 +465,33 @@ export function renderBlogIndex(posts: IndexEntry[], all: IndexEntry[] = posts, 
   });
 }
 
+const MAP_ASPECT = 1.6;
+
+/** Static world map (public/mapa-mon.svg as a background, zoomed with CSS to the area covered by
+ *  the pins) with one link per relat that has coordinates. No JS: positions are percentages. */
+function worldMap(posts: IndexEntry[]): string {
+  const pins = posts
+    .filter((p) => p.coords && p.slug)
+    .map((p) => ({ post: p, pt: projectLatLon(p.coords!.lat, p.coords!.lon) }));
+  if (!pins.length) return '';
+
+  const v = mapView(pins.map((p) => p.pt), MAP_ASPECT);
+  const bgW = (MAP_W / v.w) * 100;
+  const posX = MAP_W - v.w < 0.001 ? 0 : (v.x / (MAP_W - v.w)) * 100;
+  const posY = MAP_H - v.h < 0.001 ? 0 : (v.y / (MAP_H - v.h)) * 100;
+
+  const links = pins
+    .map(({ post, pt }) => {
+      const left = ((pt.x - v.x) / v.w) * 100;
+      const top = ((pt.y - v.y) / v.h) * 100;
+      const label = (post.location || post.title).split(',')[0].trim();
+      return `<a class="map-pin${left > 72 ? ' left' : ''}" href="/blog/${post.slug}/" style="left:${left.toFixed(2)}%;top:${top.toFixed(2)}%" title="${escapeHtml(post.title)}"><span class="dot" aria-hidden="true"></span><span class="label">${escapeHtml(label)}</span></a>`;
+    })
+    .join('');
+
+  return `<div class="world-map" role="group" aria-label="Mapa dels llocs visitats" style="--ar:${MAP_ASPECT};background-size:${bgW.toFixed(2)}% auto;background-position:${posX.toFixed(2)}% ${posY.toFixed(2)}%">${links}</div>`;
+}
+
 function countrySlug(country: string): string {
   return country
     .normalize('NFD')
@@ -500,6 +528,7 @@ export function renderDestinations(all: IndexEntry[]): string {
   const body = `<main class="page-blog-index page-destinations">
   <h1>Destinacions</h1>
   <p class="intro">Els llocs on he estat, país per país.</p>
+  ${worldMap(all)}
   ${nav}
   ${sections || '<p class="intro">Aviat hi haurà aquí els primers destins.</p>'}
   ${categoryChips(usedCategories(all), undefined) ? `<h2 class="by-theme">Per tema</h2>${categoryChips(usedCategories(all))}` : ''}

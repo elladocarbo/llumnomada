@@ -16,7 +16,7 @@ import { renderPreview } from '../lib/html.mts';
 import { purgeBlogCache, noStoreHeaders } from '../lib/cache.mts';
 import { getStats } from '../lib/hits.mts';
 import { castVote } from '../lib/ratings.mts';
-import type { Block, Post, PostInfo, Settings } from '../lib/types.mts';
+import type { Block, Coords, Post, PostInfo, Settings } from '../lib/types.mts';
 import { SESSION_TTL_SECONDS } from '../lib/config.mts';
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -77,6 +77,18 @@ function sanitizeInfo(v: unknown): PostInfo | undefined {
     if (text) out[key] = text;
   }
   return Object.keys(out).length ? out : undefined;
+}
+
+/** Accepts "53.35, -6.26" (latitude, longitude — the format Google Maps copies). undefined keeps
+ *  the current value, an empty value clears it, and an unparseable one is ignored. */
+function sanitizeCoords(v: unknown, current?: Coords): Coords | undefined {
+  if (v === undefined) return current;
+  if (v === null || String(v).trim() === '') return undefined;
+  const m = String(v).match(/^\s*(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if (!m) return current;
+  const lat = Number(m[1]);
+  const lon = Number(m[2]);
+  return Math.abs(lat) <= 90 && Math.abs(lon) <= 180 ? { lat, lon } : current;
 }
 
 function sanitizeStringArray(v: unknown, maxLen = 200): string[] {
@@ -215,6 +227,7 @@ export default async (request: Request, context: Context) => {
       // Scripts that re-save a post without sending 'info' must not wipe it; the panel always sends it.
       info: body.info === undefined ? existing?.info : sanitizeInfo(body.info),
       country: body.country === undefined ? existing?.country : String(body.country).replace(/[<>]/g, '').trim().slice(0, 80),
+      coords: sanitizeCoords(body.coords, existing?.coords),
     };
 
     const saved = await savePost(post);

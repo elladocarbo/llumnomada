@@ -8,6 +8,11 @@ export interface Block {
   alt?: string;
 }
 
+export interface Coords {
+  lat: number;
+  lon: number;
+}
+
 /** Optional "practical sheet" shown under the title; every field is plain text and optional. */
 export interface PostInfo {
   days?: string;
@@ -28,6 +33,8 @@ export interface Post {
   location: string;
   /** Country, used to group relats on the "Destinacions" page. Empty for non-destination posts. */
   country?: string;
+  /** Where to put this relat's pin on the world map of "Destinacions". */
+  coords?: Coords;
   date: string;
   updated: string;
   status: 'draft' | 'published';
