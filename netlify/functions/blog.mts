@@ -73,8 +73,13 @@ export default async (request: Request, context: Context) => {
     const post = await getPostBySlug(blogMatch[1]);
     if (!post || post.status !== 'published') return html(render404(), 404);
     const ip = getClientIp(request, context);
-    const [summary, myVote] = await Promise.all([getSummary(post.id), getMyVote(post.id, ip, sessionSecret)]);
-    return html(renderArticle(post, { postId: post.id, summary, myVote }));
+    const [summary, myVote, index] = await Promise.all([getSummary(post.id), getMyVote(post.id, ip, sessionSecret), listIndex()]);
+    // The index is sorted newest-first, so the next-older post sits after this one.
+    const published = index.filter((p) => p.status === 'published' && p.slug);
+    const at = published.findIndex((p) => p.id === post.id);
+    const toLink = (p?: (typeof published)[number]) => (p ? { slug: p.slug as string, title: p.title } : undefined);
+    const adjacent = at === -1 ? undefined : { prev: toLink(published[at + 1]), next: toLink(published[at - 1]) };
+    return html(renderArticle(post, { postId: post.id, summary, myVote }, adjacent));
   }
 
   return html(render404(), 404);

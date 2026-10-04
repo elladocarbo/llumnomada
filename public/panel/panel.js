@@ -309,6 +309,14 @@ async function renderEditor(id) {
       <label for="fLocation">Ubicació (opcional)</label>
       <input type="text" id="fLocation" value="${escapeHtml(post.location || '')}" placeholder="p. ex. Lisboa, Portugal">
 
+      <label>Fitxa pràctica (opcional; els camps buits no es mostren)</label>
+      <div class="row" style="flex-wrap:wrap">
+        <input type="text" id="fInfoDays" value="${escapeHtml(post.info?.days || '')}" placeholder="Durada — p. ex. 4 dies" style="flex:1 1 220px">
+        <input type="text" id="fInfoSeason" value="${escapeHtml(post.info?.season || '')}" placeholder="Època — p. ex. Novembre" style="flex:1 1 220px">
+        <input type="text" id="fInfoBudget" value="${escapeHtml(post.info?.budget || '')}" placeholder="Pressupost — p. ex. 900 € per persona" style="flex:1 1 220px">
+        <input type="text" id="fInfoTransport" value="${escapeHtml(post.info?.transport || '')}" placeholder="Com moure’s — p. ex. A peu i metro" style="flex:1 1 220px">
+      </div>
+
       <label>Categories</label>
       <div class="checkbox-grid" id="catGrid">
         ${CATEGORIES.map(
@@ -435,6 +443,12 @@ async function renderEditor(id) {
       status,
       scheduledAt: scheduleVal ? new Date(scheduleVal).toISOString() : null,
       date: post.date,
+      info: {
+        days: document.getElementById('fInfoDays').value,
+        season: document.getElementById('fInfoSeason').value,
+        budget: document.getElementById('fInfoBudget').value,
+        transport: document.getElementById('fInfoTransport').value,
+      },
     };
   }
 

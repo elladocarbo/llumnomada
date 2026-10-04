@@ -1,7 +1,7 @@
-import type { Block, IndexEntry, Post } from './types.mts';
+import type { Block, IndexEntry, Post, PostInfo } from './types.mts';
 import { SITE, SITE_NAME, TAGLINE, AUTHOR_NAME, CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from './config.mts';
 import { decodeHtmlEntities, escapeHtml } from './sanitize.mts';
-import { renderBlocks } from './blocks.mts';
+import { renderBlocks, renderToc } from './blocks.mts';
 import { ABOUT_BLOCKS, ABOUT_COVER, ABOUT_DESCRIPTION, ABOUT_LEAD, ABOUT_SUMMARY, ABOUT_TITLE } from '../seed/about.mts';
 import { RATING_LEGEND, type RatingSummary } from './ratings.mts';
 import { imageSrcset, imageUrl } from './images.mts';
@@ -114,9 +114,10 @@ function tagsHtml(categories: string[]): string {
   return `<div class="tags">${categories.map((c) => `<span class="tag">${escapeHtml(c)}</span>`).join('')}</div>`;
 }
 
-function metaRow(date: string, updated: string, location?: string): string {
+function metaRow(date: string, updated: string, location?: string, reading?: number): string {
   const parts = [`<time datetime="${date}">${formatDate(date)}</time>`];
   if (location) parts.push(`<span class="location">${escapeHtml(location)}</span>`);
+  if (reading) parts.push(`<span class="reading">${reading} min de lectura</span>`);
   if (updated && updated.slice(0, 10) !== date.slice(0, 10)) {
     parts.push(`<em>Actualitzat el ${formatDate(updated)}</em>`);
   }
@@ -133,6 +134,47 @@ interface ArticleLike {
   date: string;
   updated: string;
   refs?: string[];
+}
+
+interface NavLink {
+  slug: string;
+  title: string;
+}
+
+export interface AdjacentPosts {
+  /** Next-older published post. */
+  prev?: NavLink;
+  /** Next-newer published post. */
+  next?: NavLink;
+}
+
+interface ArticleExtras {
+  toc?: boolean;
+  info?: PostInfo;
+  reading?: number;
+  adjacent?: AdjacentPosts;
+}
+
+const INFO_LABELS: Array<[keyof PostInfo, string]> = [
+  ['days', 'Durada'],
+  ['season', 'Època'],
+  ['budget', 'Pressupost'],
+  ['transport', 'Com moure’s'],
+];
+
+function infoHtml(info?: PostInfo): string {
+  const rows = INFO_LABELS.filter(([key]) => info?.[key]).map(
+    ([key, label]) => `<div><dt>${label}</dt><dd>${escapeHtml(info![key]!)}</dd></div>`,
+  );
+  if (!rows.length) return '';
+  return `<aside class="trip-info" aria-label="Fitxa pràctica"><h2>Fitxa pràctica</h2><dl>${rows.join('')}</dl></aside>`;
+}
+
+function postNavHtml(adjacent?: AdjacentPosts): string {
+  if (!adjacent?.prev && !adjacent?.next) return '';
+  const link = (cls: string, label: string, l?: NavLink) =>
+    l ? `<a class="${cls}" href="/blog/${l.slug}/"><span>${label}</span><strong>${escapeHtml(l.title)}</strong></a>` : '';
+  return `<nav class="post-nav" aria-label="Més relats">${link('prev', '← Relat anterior', adjacent.prev)}${link('next', 'Relat següent →', adjacent.next)}</nav>`;
 }
 
 function refsHtml(refs?: string[]): string {
@@ -182,22 +224,25 @@ function renderRatingSection(rating: RatingProps): string {
   </section>`;
 }
 
-function renderArticleBody(a: ArticleLike, rating?: RatingProps): string {
+function renderArticleBody(a: ArticleLike, rating?: RatingProps, extras: ArticleExtras = {}): string {
   return `<main class="page-article">
 <article>
   ${a.cover ? `<div class="hero-image">${coverImg(a.cover, [800, 1200, 1600], '100vw', ' fetchpriority="high"')}</div>` : ''}
   <div class="prose">
     <div class="title">
-      ${metaRow(a.date, a.updated, a.location)}
+      ${metaRow(a.date, a.updated, a.location, extras.reading)}
       ${tagsHtml(a.categories ?? [])}
       <h1>${escapeHtml(a.title)}</h1>
     </div>
     <hr>
     <p>${a.lead}</p>
+    ${infoHtml(extras.info)}
+    ${extras.toc ? renderToc(a.blocks) : ''}
     ${renderBlocks(a.blocks)}
     ${refsHtml(a.refs)}
     <div class="ornament-rombo" aria-hidden="true">◆</div>
     ${rating ? renderRatingSection(rating) : ''}
+    ${postNavHtml(extras.adjacent)}
   </div>
 </article>
 </main>`;
@@ -212,7 +257,7 @@ const ARTICLE_THEME_BY_SLUG: Record<string, string> = {
   'irlanda-l-illa-maragda': 'page-irlanda',
 };
 
-export function renderArticle(post: Post, rating?: RatingProps): string {
+export function renderArticle(post: Post, rating?: RatingProps, adjacent?: AdjacentPosts): string {
   const canonical = `${SITE}/blog/${post.slug}/`;
   const theme = post.slug ? ARTICLE_THEME_BY_SLUG[post.slug] : undefined;
   const bodyClass = theme ? `page-article ${theme}` : 'page-article';
@@ -236,6 +281,7 @@ export function renderArticle(post: Post, rating?: RatingProps): string {
         refs: post.refs,
       },
       rating,
+      { toc: true, info: post.info, reading: post.reading, adjacent },
     ),
     jsonLd: [
       {
@@ -264,14 +310,14 @@ export function renderArticle(post: Post, rating?: RatingProps): string {
 
 /** Renders a not-yet-saved/published post for the panel's "vista prèvia" — noindex, no JSON-LD,
  *  no dependency on a real slug (drafts don't have one yet). */
-export function renderPreview(post: Pick<Post, 'title' | 'lead' | 'blocks' | 'cover' | 'categories' | 'location' | 'date' | 'updated' | 'refs'>): string {
+export function renderPreview(post: Pick<Post, 'title' | 'lead' | 'blocks' | 'cover' | 'categories' | 'location' | 'date' | 'updated' | 'refs' | 'info'>): string {
   const layout = renderLayout({
     title: `${post.title || '(Sense títol)'} — ${SITE_NAME}`,
     description: (post.lead || '').replace(/<[^>]+>/g, '').slice(0, 200),
     canonical: `${SITE}/`,
     ogImage: ogImageUrl(post.cover || '/images/hero-home.svg'),
     bodyClass: 'page-article page-preview',
-    bodyHtml: renderArticleBody(post),
+    bodyHtml: renderArticleBody(post, undefined, { toc: true, info: post.info }),
   });
   return layout.replace('<head>', '<head>\n<meta name="robots" content="noindex,nofollow">');
 }
