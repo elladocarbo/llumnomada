@@ -4,7 +4,7 @@ const UPLOADED = /^\/img\/[a-zA-Z0-9-]{1,100}$/;
  *  image (/img/<id>) — e.g. the static SVG placeholders — is returned unchanged. */
 export function imageUrl(path: string, width: number): string {
   if (!UPLOADED.test(path)) return path;
-  return `/.netlify/images?url=${encodeURIComponent(path)}&w=${width}&fm=webp&q=78`;
+  return `/.netlify/images?url=${encodeURIComponent(path)}&w=${width}&fm=webp&q=72`;
 }
 
 /** `srcset` value for the given widths, or '' when the image can't be resized. */

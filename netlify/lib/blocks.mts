@@ -33,9 +33,9 @@ export function renderBlocks(blocks: Block[]): string {
         case 'img': {
           const id = `lightbox-${i}`;
           const alt = escapeHtml(block.alt ?? '');
-          const srcset = imageSrcset(block.h, [480, 800, 1200]);
+          const srcset = imageSrcset(block.h, [400, 640, 960]);
           const thumbAttrs = srcset
-            ? `src="${imageUrl(block.h, 800)}" srcset="${srcset}" sizes="(max-width: 720px) 85vw, 520px"`
+            ? `src="${imageUrl(block.h, 640)}" srcset="${srcset}" sizes="(max-width: 720px) 85vw, 520px"`
             : `src="${block.h}"`;
           // The overlay image is lazy on purpose: inside a display:none box a lazy <img> isn't
           // fetched until :target reveals it, so enlarged copies don't load with the page.
