@@ -476,9 +476,6 @@ function worldMap(posts: IndexEntry[]): string {
   if (!pins.length) return '';
 
   const v = mapView(pins.map((p) => p.pt), MAP_ASPECT);
-  const bgW = (MAP_W / v.w) * 100;
-  const posX = MAP_W - v.w < 0.001 ? 0 : (v.x / (MAP_W - v.w)) * 100;
-  const posY = MAP_H - v.h < 0.001 ? 0 : (v.y / (MAP_H - v.h)) * 100;
 
   const links = pins
     .map(({ post, pt }) => {
@@ -489,7 +486,10 @@ function worldMap(posts: IndexEntry[]): string {
     })
     .join('');
 
-  return `<div class="world-map" role="group" aria-label="Mapa dels llocs visitats" style="--ar:${MAP_ASPECT};background-size:${bgW.toFixed(2)}% auto;background-position:${posX.toFixed(2)}% ${posY.toFixed(2)}%">${links}</div>`;
+  // The drawing sits in an inline <svg> whose viewBox is exactly the visible window (same aspect
+  // as the box), so pin percentages and the art can't drift apart.
+  const art = `<svg class="map-art" viewBox="${v.x.toFixed(2)} ${v.y.toFixed(2)} ${v.w.toFixed(2)} ${v.h.toFixed(2)}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><image href="/mapa-mon.svg" x="0" y="0" width="${MAP_W}" height="${MAP_H}"/></svg>`;
+  return `<div class="world-map" role="group" aria-label="Mapa dels llocs visitats" style="--ar:${MAP_ASPECT}">${art}${links}</div>`;
 }
 
 function countrySlug(country: string): string {
