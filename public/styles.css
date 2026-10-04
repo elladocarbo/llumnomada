@@ -231,6 +231,8 @@ a.tag:hover { border-color: var(--oro-viejo); color: var(--tinta); }
 /* Blog index */
 main.page-blog-index { width: 960px; max-width: calc(100% - 2em); }
 main.page-blog-index h1 { text-align: center; margin-bottom: 1.5em; }
+main.page-blog-index h1, main.page-blog-index h2 { overflow-wrap: anywhere; }
+@media (max-width: 720px) { main.page-blog-index h1 { font-size: 1.8em; } main.page-blog-index .destination h2 { font-size: 1.6em; } }
 main.page-blog-index ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 2rem; }
 main.page-blog-index li { width: calc(50% - 1rem); }
 main.page-blog-index li.featured { width: 100%; text-align: center; }
