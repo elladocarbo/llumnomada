@@ -57,7 +57,9 @@ function sanitizeBlocks(blocks: unknown): Block[] {
     .map((b: any): Block | null => {
       if (b.t === 'img') {
         const path = String(b.h ?? '');
-        return IMAGE_PATH.test(path) ? { t: 'img', h: path } : null;
+        if (!IMAGE_PATH.test(path)) return null;
+        const alt = String(b.alt ?? '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 250);
+        return alt ? { t: 'img', h: path, alt } : { t: 'img', h: path };
       }
       const t = b.t === 'h3' || b.t === 'q' ? b.t : 'p';
       return { t, h: sanitizeRichText(String(b.h ?? '')) };
