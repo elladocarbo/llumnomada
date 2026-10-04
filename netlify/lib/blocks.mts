@@ -49,7 +49,7 @@ export function renderToc(blocks: Block[]): string {
   const ids = headingIds(blocks);
   if (ids.size < 3) return '';
   const items = [...ids.entries()]
-    .map(([i, id]) => `<li><a href="#${id}">${stripTags(blocks[i].h).replace(/s+/g, ' ').trim()}</a></li>`)
+    .map(([i, id]) => `<li><a href="#${id}">${stripTags(blocks[i].h).replace(/\s+/g, ' ').trim()}</a></li>`)
     .join('');
   return `<nav class="toc" aria-label="Índex del relat"><details><summary>Índex del relat <span>(${ids.size} seccions)</span></summary><ol>${items}</ol></details></nav>`;
 }

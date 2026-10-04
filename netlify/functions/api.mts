@@ -73,7 +73,7 @@ function sanitizeInfo(v: unknown): PostInfo | undefined {
   if (!v || typeof v !== 'object') return undefined;
   const out: PostInfo = {};
   for (const key of INFO_KEYS) {
-    const text = String((v as Record<string, unknown>)[key] ?? '').replace(/[<>]/g, '').replace(/s+/g, ' ').trim().slice(0, 200);
+    const text = String((v as Record<string, unknown>)[key] ?? '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 200);
     if (text) out[key] = text;
   }
   return Object.keys(out).length ? out : undefined;
