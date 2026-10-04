@@ -40,7 +40,7 @@ interface LayoutOpts {
   bodyClass: string;
   bodyHtml: string;
   jsonLd?: object[];
-  activeNav?: '/' | '/blog' | '/about';
+  activeNav?: '/' | '/blog' | '/destinacions' | '/about';
 }
 
 function renderLayout(opts: LayoutOpts): string {
@@ -85,6 +85,7 @@ function renderHeader(active?: string): string {
     <nav aria-label="Navegació principal">
       ${link('/', 'Inici')}
       ${link('/blog', 'Relats')}
+      ${link('/destinacions', 'Destinacions')}
       ${link('/about', 'Sobre mí')}
     </nav>
   </div>
@@ -109,9 +110,20 @@ function renderFooter(): string {
 </footer>`;
 }
 
+/** "cap-de-setmana" → "cap de setmana" */
+export function categoryLabel(category: string): string {
+  return category.replace(/-/g, ' ');
+}
+
+export function categoryPath(category: string): string {
+  return `/categoria/${encodeURIComponent(category)}/`;
+}
+
 function tagsHtml(categories: string[]): string {
   if (!categories?.length) return '';
-  return `<div class="tags">${categories.map((c) => `<span class="tag">${escapeHtml(c)}</span>`).join('')}</div>`;
+  return `<div class="tags">${categories
+    .map((c) => `<a class="tag" href="${categoryPath(c)}">${escapeHtml(categoryLabel(c))}</a>`)
+    .join('')}</div>`;
 }
 
 function metaRow(date: string, updated: string, location?: string, reading?: number): string {
@@ -403,29 +415,103 @@ export function renderHome(latest: IndexEntry[]): string {
   });
 }
 
-export function renderBlogIndex(posts: IndexEntry[]): string {
-  const items = posts
+function postCards(posts: IndexEntry[], featuredFirst: boolean): string {
+  return posts
     .map(
-      (p, i) => `<li class="${i === 0 ? 'featured' : ''}"><a href="/blog/${p.slug}/">
+      (p, i) => `<li class="${featuredFirst && i === 0 ? 'featured' : ''}"><a href="/blog/${p.slug}/">
         ${coverImg(p.cover, [480, 800], '(max-width: 720px) 90vw, 330px', ' loading="lazy" decoding="async"')}
         <h4 class="title">${escapeHtml(p.title)}</h4>
         <div class="meta"><time datetime="${p.date}">${formatDate(p.date)}</time>${p.location ? `<span class="location">${escapeHtml(p.location)}</span>` : ''}</div>
       </a></li>`,
     )
     .join('');
+}
 
+/** Row of category links ("per tema"); `current` is highlighted on its own category page. */
+function categoryChips(categories: string[], current?: string): string {
+  if (!categories.length) return '';
+  return `<nav class="chips" aria-label="Relats per tema">${categories
+    .map((c) => `<a href="${categoryPath(c)}"${c === current ? ' class="current" aria-current="page"' : ''}>${escapeHtml(categoryLabel(c))}</a>`)
+    .join('')}</nav>`;
+}
+
+/** Categories used by at least one of the given posts, most-used first. */
+export function usedCategories(posts: IndexEntry[]): string[] {
+  const counts = new Map<string, number>();
+  for (const p of posts) for (const c of p.categories ?? []) counts.set(c, (counts.get(c) ?? 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ca')).map(([c]) => c);
+}
+
+/** The full list of relats (`category` undefined) or the relats of one category. `all` is every
+ *  published post, used to build the category chips. */
+export function renderBlogIndex(posts: IndexEntry[], all: IndexEntry[] = posts, category?: string): string {
+  const heading = category ? `Relats: ${categoryLabel(category)}` : 'Relats';
+  const canonical = category ? `${SITE}${categoryPath(category)}` : `${SITE}/blog/`;
   const body = `<main class="page-blog-index">
-  <h1>Relats</h1>
-  <ul>${items}</ul>
+  <h1>${escapeHtml(heading)}</h1>
+  ${categoryChips(usedCategories(all), category)}
+  <ul>${postCards(posts, true)}</ul>
 </main>`;
 
   return renderLayout({
-    title: `Relats — ${SITE_NAME}`,
-    description: TAGLINE,
-    canonical: `${SITE}/blog/`,
+    title: `${heading} — ${SITE_NAME}`,
+    description: category ? `Tots els relats de la categoria «${categoryLabel(category)}» de ${SITE_NAME}.` : TAGLINE,
+    canonical,
     ogImage: ogImageUrl('/images/hero-home.svg'),
     bodyClass: 'page-blog-index',
     activeNav: '/blog',
+    bodyHtml: body,
+  });
+}
+
+function countrySlug(country: string): string {
+  return country
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/** Relats grouped by country (the `country` field), countries ordered by their newest relat. Posts
+ *  without a country (general advice, etc.) simply don't appear here. */
+export function renderDestinations(all: IndexEntry[]): string {
+  const groups = new Map<string, IndexEntry[]>();
+  for (const p of all) {
+    const country = (p.country ?? '').trim();
+    if (!country) continue;
+    groups.set(country, [...(groups.get(country) ?? []), p]);
+  }
+  const countries = [...groups.keys()];
+
+  const sections = countries
+    .map(
+      (c) => `<section class="destination" id="${countrySlug(c)}">
+    <h2>${escapeHtml(c)} <span>${groups.get(c)!.length} ${groups.get(c)!.length === 1 ? 'relat' : 'relats'}</span></h2>
+    <ul>${postCards(groups.get(c)!, false)}</ul>
+  </section>`,
+    )
+    .join('\n  ');
+
+  const nav = countries.length > 1
+    ? `<nav class="chips" aria-label="Salta a un país">${countries.map((c) => `<a href="#${countrySlug(c)}">${escapeHtml(c)}</a>`).join('')}</nav>`
+    : '';
+
+  const body = `<main class="page-blog-index page-destinations">
+  <h1>Destinacions</h1>
+  <p class="intro">Els llocs on he estat, país per país.</p>
+  ${nav}
+  ${sections || '<p class="intro">Aviat hi haurà aquí els primers destins.</p>'}
+  ${categoryChips(usedCategories(all), undefined) ? `<h2 class="by-theme">Per tema</h2>${categoryChips(usedCategories(all))}` : ''}
+</main>`;
+
+  return renderLayout({
+    title: `Destinacions — ${SITE_NAME}`,
+    description: `Els relats de viatge de ${SITE_NAME} agrupats per país.`,
+    canonical: `${SITE}/destinacions/`,
+    ogImage: ogImageUrl('/images/hero-home.svg'),
+    bodyClass: 'page-blog-index',
+    activeNav: '/destinacions',
     bodyHtml: body,
   });
 }
@@ -468,8 +554,9 @@ ${items}
 }
 
 export function renderSitemap(posts: IndexEntry[]): string {
-  const urls = ['', 'blog', 'about'].map((p) => `<url><loc>${SITE}/${p}${p ? '/' : ''}</loc></url>`);
+  const urls = ['', 'blog', 'destinacions', 'about'].map((p) => `<url><loc>${SITE}/${p}${p ? '/' : ''}</loc></url>`);
   for (const p of posts) urls.push(`<url><loc>${SITE}/blog/${p.slug}/</loc></url>`);
+  for (const c of usedCategories(posts)) urls.push(`<url><loc>${SITE}${categoryPath(c)}</loc></url>`);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.join('\n')}

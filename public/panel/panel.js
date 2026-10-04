@@ -309,6 +309,9 @@ async function renderEditor(id) {
       <label for="fLocation">Ubicació (opcional)</label>
       <input type="text" id="fLocation" value="${escapeHtml(post.location || '')}" placeholder="p. ex. Lisboa, Portugal">
 
+      <label for="fCountry">País (opcional)</label>
+      <input type="text" id="fCountry" value="${escapeHtml(post.country || '')}" placeholder="p. ex. Irlanda — serveix per agrupar els relats a Destinacions">
+
       <label>Fitxa pràctica (opcional; els camps buits no es mostren)</label>
       <div class="row" style="flex-wrap:wrap">
         <input type="text" id="fInfoDays" value="${escapeHtml(post.info?.days || '')}" placeholder="Durada — p. ex. 4 dies" style="flex:1 1 220px">
@@ -439,6 +442,7 @@ async function renderEditor(id) {
       refs,
       categories,
       location: document.getElementById('fLocation').value.trim(),
+      country: document.getElementById('fCountry').value.trim(),
       cover: document.getElementById('coverPreview').dataset.url || post.cover || '',
       status,
       scheduledAt: scheduleVal ? new Date(scheduleVal).toISOString() : null,
