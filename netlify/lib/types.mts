@@ -4,6 +4,8 @@ export interface Block {
   t: BlockType;
   /** Rich text for p/h3/q. For 'img', the image path (e.g. "/img/<id>") — not sanitized as text. */
   h: string;
+  /** 'img' only: plain-text description for screen readers and search engines (stored unescaped). */
+  alt?: string;
 }
 
 export interface Post {

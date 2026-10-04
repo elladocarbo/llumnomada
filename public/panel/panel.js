@@ -200,6 +200,9 @@ function blockHtml(block) {
       <img class="cover-preview block-image-preview" data-url="${escapeHtml(block.h || '')}" src="${escapeHtml(block.h || '/images/hero-home.svg')}" alt="">
       <input type="file" class="block-image-input" accept="image/*">
       <p class="hint block-image-hint"></p>
+      <label class="hint" style="display:block;margin-top:.6em">Descripció de la foto (per a lectors de pantalla i Google)
+        <input type="text" class="block-image-alt" maxlength="250" value="${escapeHtml(block.alt || '')}" placeholder="Ex.: La torre rodona de Glendalough entre creus celtes">
+      </label>
     </div>`;
   }
 
@@ -406,7 +409,11 @@ async function renderEditor(id) {
     const blocks = [...blocksListEl.querySelectorAll('.block')]
       .map((card) => {
         if (card.dataset.t === 'img') {
-          return { t: 'img', h: card.querySelector('.block-image-preview').dataset.url || '' };
+          return {
+            t: 'img',
+            h: card.querySelector('.block-image-preview').dataset.url || '',
+            alt: card.querySelector('.block-image-alt').value,
+          };
         }
         return { t: card.dataset.t, h: card.querySelector('.block-body').innerHTML };
       })

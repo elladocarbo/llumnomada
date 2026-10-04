@@ -1,4 +1,6 @@
 import type { Block } from './types.mts';
+import { escapeHtml } from './sanitize.mts';
+import { imageSrcset, imageUrl } from './images.mts';
 
 const WORDS_PER_MINUTE = 200;
 
@@ -30,10 +32,17 @@ export function renderBlocks(blocks: Block[]): string {
           return `<blockquote>${block.h}</blockquote>`;
         case 'img': {
           const id = `lightbox-${i}`;
+          const alt = escapeHtml(block.alt ?? '');
+          const srcset = imageSrcset(block.h, [480, 800, 1200]);
+          const thumbAttrs = srcset
+            ? `src="${imageUrl(block.h, 800)}" srcset="${srcset}" sizes="(max-width: 720px) 85vw, 520px"`
+            : `src="${block.h}"`;
+          // The overlay image is lazy on purpose: inside a display:none box a lazy <img> isn't
+          // fetched until :target reveals it, so enlarged copies don't load with the page.
           return `<figure class="prose-image">
-  <a href="#${id}" class="prose-image-link" aria-label="Amplia la imatge"><img src="${block.h}" alt="" loading="lazy"></a>
+  <a href="#${id}" class="prose-image-link" aria-label="Amplia la imatge"><img ${thumbAttrs} alt="${alt}" loading="lazy" decoding="async"></a>
 </figure>
-<a href="#_top" class="lightbox" id="${id}"><img src="${block.h}" alt=""></a>`;
+<a href="#_top" class="lightbox" id="${id}"><img src="${imageUrl(block.h, 1600)}" alt="${alt}" loading="lazy" decoding="async"></a>`;
         }
         case 'p':
         default:

@@ -4,6 +4,14 @@ import { decodeHtmlEntities, escapeHtml } from './sanitize.mts';
 import { renderBlocks } from './blocks.mts';
 import { ABOUT_BLOCKS, ABOUT_COVER, ABOUT_DESCRIPTION, ABOUT_LEAD, ABOUT_SUMMARY, ABOUT_TITLE } from '../seed/about.mts';
 import { RATING_LEGEND, type RatingSummary } from './ratings.mts';
+import { imageSrcset, imageUrl } from './images.mts';
+
+// Responsive WebP copies of an uploaded cover image (see images.mts); static SVGs pass through.
+function coverImg(cover: string, widths: number[], sizes: string, extra = ''): string {
+  const srcset = imageSrcset(cover, widths);
+  const src = imageUrl(cover, widths[Math.min(1, widths.length - 1)]);
+  return `<img src="${escapeHtml(src)}"${srcset ? ` srcset="${escapeHtml(srcset)}" sizes="${sizes}"` : ''} alt=""${extra}>`;
+}
 
 function formatDate(iso: string): string {
   try {
@@ -177,7 +185,7 @@ function renderRatingSection(rating: RatingProps): string {
 function renderArticleBody(a: ArticleLike, rating?: RatingProps): string {
   return `<main class="page-article">
 <article>
-  ${a.cover ? `<div class="hero-image"><img src="${escapeHtml(a.cover)}" alt=""></div>` : ''}
+  ${a.cover ? `<div class="hero-image">${coverImg(a.cover, [800, 1200, 1600], '100vw', ' fetchpriority="high"')}</div>` : ''}
   <div class="prose">
     <div class="title">
       ${metaRow(a.date, a.updated, a.location)}
@@ -302,7 +310,7 @@ export function renderHome(latest: IndexEntry[]): string {
     .slice(0, 3)
     .map(
       (p) => `<li><a href="/blog/${p.slug}/">
-        <img src="${escapeHtml(p.cover)}" alt="" loading="lazy">
+        ${coverImg(p.cover, [480, 800], '(max-width: 720px) 90vw, 330px', ' loading="lazy" decoding="async"')}
         <h4>${escapeHtml(p.title)}</h4>
         <p class="date">${formatDate(p.date)}</p>
       </a></li>`,
@@ -353,7 +361,7 @@ export function renderBlogIndex(posts: IndexEntry[]): string {
   const items = posts
     .map(
       (p, i) => `<li class="${i === 0 ? 'featured' : ''}"><a href="/blog/${p.slug}/">
-        <img src="${escapeHtml(p.cover)}" alt="" loading="lazy">
+        ${coverImg(p.cover, [480, 800], '(max-width: 720px) 90vw, 330px', ' loading="lazy" decoding="async"')}
         <h4 class="title">${escapeHtml(p.title)}</h4>
         <div class="meta"><time datetime="${p.date}">${formatDate(p.date)}</time>${p.location ? `<span class="location">${escapeHtml(p.location)}</span>` : ''}</div>
       </a></li>`,
