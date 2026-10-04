@@ -116,11 +116,33 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
 }
 
 .page-irlanda .prose-image { width: 80%; }
-.page-irlanda .prose-image img {
-  border-width: 32px;
-  border-image-source: url("/frame-celtic.png");
-  border-image-slice: 114 fill;
-  border-image-repeat: round;
+/* The photo runs to its edge; the frame is an overlay (a pseudo-element on the link, since an <img>
+   can't have one) that fades out towards the inside via a mask — one gradient per side. */
+.page-irlanda .prose-image-link { position: relative; --w: 24px; --solid: 50%; }
+.page-irlanda .prose-image img { border-width: 0; }
+.page-irlanda .prose-image-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: var(--w) solid transparent;
+  border-image: url("/frame-celtic.png") 114 round;
+  -webkit-mask-image:
+    linear-gradient(to right, #000 0, #000 var(--solid), transparent 100%),
+    linear-gradient(to left, #000 0, #000 var(--solid), transparent 100%),
+    linear-gradient(to bottom, #000 0, #000 var(--solid), transparent 100%),
+    linear-gradient(to top, #000 0, #000 var(--solid), transparent 100%);
+  mask-image:
+    linear-gradient(to right, #000 0, #000 var(--solid), transparent 100%),
+    linear-gradient(to left, #000 0, #000 var(--solid), transparent 100%),
+    linear-gradient(to bottom, #000 0, #000 var(--solid), transparent 100%),
+    linear-gradient(to top, #000 0, #000 var(--solid), transparent 100%);
+  -webkit-mask-size: var(--w) 100%, var(--w) 100%, 100% var(--w), 100% var(--w);
+  mask-size: var(--w) 100%, var(--w) 100%, 100% var(--w), 100% var(--w);
+  -webkit-mask-position: left, right, top, bottom;
+  mask-position: left, right, top, bottom;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 /* Pure-CSS lightbox: the thumbnail links to #lightbox-N, :target reveals the fullscreen overlay. */
@@ -287,7 +309,7 @@ button.stars:focus-visible {
   .page-irlanda .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
   .page-roma .prose-image img,
   .page-copenhagen .prose-image img { border-width: 9px; }
-  .page-irlanda .prose-image img { border-width: 22px; }
+  .page-irlanda .prose-image-link { --w: 17px; }
 }
 
 /* "ROMA: la Città Eterna" — darker parchment behind the reading column, to suit its photos */
