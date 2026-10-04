@@ -312,6 +312,9 @@ async function renderEditor(id) {
       <label for="fCountry">País (opcional)</label>
       <input type="text" id="fCountry" value="${escapeHtml(post.country || '')}" placeholder="p. ex. Irlanda — serveix per agrupar els relats a Destinacions">
 
+      <label for="fCoords">Coordenades per al mapa (opcional)</label>
+      <input type="text" id="fCoords" value="${post.coords ? `${post.coords.lat}, ${post.coords.lon}` : ''}" placeholder="p. ex. 53.35, -6.26 — latitud i longitud (es copien fent clic dret al lloc a Google Maps)">
+
       <label>Fitxa pràctica (opcional; els camps buits no es mostren)</label>
       <div class="row" style="flex-wrap:wrap">
         <input type="text" id="fInfoDays" value="${escapeHtml(post.info?.days || '')}" placeholder="Durada — p. ex. 4 dies" style="flex:1 1 220px">
@@ -443,6 +446,7 @@ async function renderEditor(id) {
       categories,
       location: document.getElementById('fLocation').value.trim(),
       country: document.getElementById('fCountry').value.trim(),
+      coords: document.getElementById('fCoords').value.trim(),
       cover: document.getElementById('coverPreview').dataset.url || post.cover || '',
       status,
       scheduledAt: scheduleVal ? new Date(scheduleVal).toISOString() : null,
