@@ -384,12 +384,12 @@ async function renderEditor(id) {
 
   // Blocks
   const blocksListEl = document.getElementById('blocksList');
-  function addBlock(t, h = '') {
-    const card = el(blockHtml({ t, h }));
+  function addBlock(t, h = '', alt = '') {
+    const card = el(blockHtml({ t, h, alt }));
     blocksListEl.appendChild(card);
     wireBlockCard(card, blocksListEl);
   }
-  (post.blocks || []).forEach((b) => addBlock(b.t, b.h));
+  (post.blocks || []).forEach((b) => addBlock(b.t, b.h, b.alt));
   document.querySelectorAll('[data-add]').forEach((btn) => btn.addEventListener('click', () => addBlock(btn.dataset.add)));
 
   // Refs

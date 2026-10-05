@@ -111,5 +111,6 @@ table button { white-space: nowrap; overflow-wrap: normal; }
   .block-head .row-actions button { min-width: 40px; min-height: 40px; padding: 0.4em 0.7em; font-size: 0.85em; }
   .toolbar button { min-width: 40px; min-height: 36px; font-size: 0.95em; }
   .checkbox-grid label { padding: 0.55em 0.9em; }
+  table button { min-height: 38px; }
   input[type=file] { padding: 0.5em 0; font-size: 14px; }
 }
