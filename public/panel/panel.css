@@ -100,3 +100,16 @@ td, th { overflow-wrap: anywhere; }
   .topbar { padding: 0.7em 1em; }
   .wrap { padding: 1.4em 1em 3em; }
 }
+
+/* Editor on a phone: file pickers stay inside their box, table buttons keep their text in one
+   line, and the small block controls (move, delete, bold/italic) get finger-sized targets. */
+input[type=file] { max-width: 100%; }
+.block .block-image-input { max-width: calc(100% - 1.6em); }
+table button { white-space: nowrap; overflow-wrap: normal; }
+@media (max-width: 600px) {
+  .block-head { flex-wrap: wrap; gap: 0.4em; }
+  .block-head .row-actions button { min-width: 40px; min-height: 40px; padding: 0.4em 0.7em; font-size: 0.85em; }
+  .toolbar button { min-width: 40px; min-height: 36px; font-size: 0.95em; }
+  .checkbox-grid label { padding: 0.55em 0.9em; }
+  input[type=file] { padding: 0.5em 0; font-size: 14px; }
+}
