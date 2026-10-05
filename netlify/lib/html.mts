@@ -482,14 +482,15 @@ function worldMap(posts: IndexEntry[]): string {
       const left = ((pt.x - v.x) / v.w) * 100;
       const top = ((pt.y - v.y) / v.h) * 100;
       const label = (post.location || post.title).split(',')[0].trim();
-      return `<a class="map-pin${left > 72 ? ' left' : ''}" href="/blog/${post.slug}/" style="left:${left.toFixed(2)}%;top:${top.toFixed(2)}%" title="${escapeHtml(post.title)}"><span class="dot" aria-hidden="true"></span><span class="label">${escapeHtml(label)}</span></a>`;
+      return `<a class="map-pin${left > 72 ? ' left' : ''}" href="/blog/${post.slug}/" data-x="${pt.x.toFixed(2)}" data-y="${pt.y.toFixed(2)}" style="left:${left.toFixed(2)}%;top:${top.toFixed(2)}%" title="${escapeHtml(post.title)}"><span class="dot" aria-hidden="true"></span><span class="label">${escapeHtml(label)}</span></a>`;
     })
     .join('');
 
   // The drawing sits in an inline <svg> whose viewBox is exactly the visible window (same aspect
   // as the box), so pin percentages and the art can't drift apart.
   const art = `<svg class="map-art" viewBox="${v.x.toFixed(2)} ${v.y.toFixed(2)} ${v.w.toFixed(2)} ${v.h.toFixed(2)}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><image href="/mapa-mon.svg" x="0" y="0" width="${MAP_W}" height="${MAP_H}"/></svg>`;
-  return `<div class="world-map" role="group" aria-label="Mapa dels llocs visitats" style="--ar:${MAP_ASPECT}">${art}${links}</div>`;
+  return `<div class="world-map" role="group" aria-label="Mapa dels llocs visitats" style="--ar:${MAP_ASPECT}">${art}${links}</div>
+  <script src="/mapa.js" defer></script>`;
 }
 
 function countrySlug(country: string): string {
