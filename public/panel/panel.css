@@ -88,3 +88,15 @@ th { color: #857f6c; font-weight: 600; font-size: 0.75em; text-transform: upperc
 .stat-bar-track { flex: 1; background: #eee3cf; border-radius: 3px; overflow: hidden; height: 14px; }
 .stat-bar-fill { background: var(--verde-brezo); height: 100%; }
 .stat-bar-row .val { width: 90px; text-align: right; color: #555; }
+
+/* Narrow screens: the top bar wraps instead of overflowing, links get a finger-sized hit area,
+   and long e-mail addresses wrap inside tables instead of widening the whole page. */
+.topbar { flex-wrap: wrap; gap: 0.4em 1em; }
+.topbar nav { flex-wrap: wrap; gap: 0.2em 1.1em; }
+.topbar nav a { display: inline-block; padding: 0.55em 0.1em; }
+.table-wrap { overflow-x: auto; }
+td, th { overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .topbar { padding: 0.7em 1em; }
+  .wrap { padding: 1.4em 1em 3em; }
+}
