@@ -427,6 +427,8 @@ main.page-newsletter .subscribe { max-width: 560px; margin: 2em auto; }
 main.page-newsletter h1 { overflow-wrap: anywhere; }
 @media (max-width: 720px) { main.page-newsletter h1 { font-size: 1.8em; } }
 .page-legal .prose > p:first-of-type::first-letter { all: unset; }
+.page-legal .title h1 { overflow-wrap: anywhere; }
+@media (max-width: 720px) { .page-legal .title h1 { font-size: 1.9em; } }
 
 /* 404 */
 .page-404 main { text-align: center; padding: 6em 1em; }
