@@ -1,7 +1,8 @@
 import type { Context } from '@netlify/functions';
 import { getStore } from '@netlify/blobs';
 import { listIndex, getPostBySlug } from '../lib/store.mts';
-import { renderHome, renderBlogIndex, renderDestinations, renderArticle, renderAbout, render404, renderRss, renderSitemap } from '../lib/html.mts';
+import { newsletterEnabled } from '../lib/newsletter-config.mts';
+import { isNewsletterPage, renderNewsletterPage, renderPrivacy, renderHome, renderBlogIndex, renderDestinations, renderArticle, renderAbout, render404, renderRss, renderSitemap } from '../lib/html.mts';
 import { withCacheHeaders } from '../lib/cache.mts';
 import { getClientIp } from '../lib/auth.mts';
 import { recordHit } from '../lib/hits.mts';
@@ -63,6 +64,17 @@ export default async (request: Request, context: Context) => {
     return html(renderBlogIndex(posts, all, category));
   }
 
+  if (path === '/privacitat') {
+    return html(renderPrivacy());
+  }
+
+  const newsletterMatch = path.match(/^\/newsletter(?:\/([a-z-]+))?$/);
+  if (newsletterMatch) {
+    const kind = newsletterMatch[1] ?? '';
+    if (!isNewsletterPage(kind)) return html(render404(), 404);
+    return html(renderNewsletterPage(kind, { id: url.searchParams.get('id') ?? '', t: url.searchParams.get('t') ?? '' }));
+  }
+
   if (path === '/about') {
     return html(renderAbout());
   }
@@ -98,7 +110,7 @@ export default async (request: Request, context: Context) => {
     const at = published.findIndex((p) => p.id === post.id);
     const toLink = (p?: (typeof published)[number]) => (p ? { slug: p.slug as string, title: p.title } : undefined);
     const adjacent = at === -1 ? undefined : { prev: toLink(published[at + 1]), next: toLink(published[at - 1]) };
-    return html(renderArticle(post, { postId: post.id, summary, myVote }, adjacent));
+    return html(renderArticle(post, { postId: post.id, summary, myVote }, adjacent, newsletterEnabled()));
   }
 
   return html(render404(), 404);

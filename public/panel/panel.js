@@ -49,6 +49,7 @@ function shell(activeHash, bodyHtml) {
     ['#/posts/new', 'Nou article'],
     ['#/settings', 'Ajustos'],
     ['#/stats', 'Lectors'],
+    ['#/newsletter', 'Newsletter'],
   ];
   app.innerHTML = `
     <div class="topbar">
@@ -90,6 +91,7 @@ async function router() {
   if (editMatch) return renderEditor(editMatch[1]);
   if (hash === '#/settings') return renderSettings();
   if (hash === '#/stats') return renderStats();
+  if (hash === '#/newsletter') return renderNewsletter();
 
   location.hash = '#/posts';
 }
@@ -569,4 +571,103 @@ async function renderStats() {
       )
       .join('')}
   </div>`;
+}
+
+// ---------- Newsletter ----------
+async function renderNewsletter() {
+  shell('#/newsletter', `<h1>Newsletter</h1><div id="nlBody">Carregant…</div>`);
+  const body = document.getElementById('nlBody');
+  const data = await api('/newsletter');
+
+  if (!data.enabled) {
+    body.innerHTML = `<div class="card">
+      <p><strong>La newsletter encara no està activa.</strong> Per activar-la:</p>
+      <ol>
+        <li>Crea un compte gratuït a <a href="https://www.brevo.com/" target="_blank" rel="noopener">brevo.com</a>.</li>
+        <li>A Brevo, verifica l’adreça des de la qual s’enviaran els correus (ara: <strong>${escapeHtml(data.fromEmail)}</strong>).</li>
+        <li>A Brevo, crea una clau d’API (Configuració → SMTP i API → Claus API) i passa-me-la.</li>
+      </ol>
+      <p class="hint">Quan estigui activa, apareixerà un formulari de subscripció al final de cada relat i al peu de la pàgina.</p>
+    </div>`;
+    return;
+  }
+
+  const fmt = (iso) => (iso ? new Date(iso).toLocaleDateString('ca-ES') : '');
+  const label = { active: 'Subscrit/a', pending: 'Pendent de confirmar', unsubscribed: 'De baixa' };
+  body.innerHTML = `
+    <div class="card">
+      <p><strong>${data.counts.active}</strong> subscripcions actives · ${data.counts.pending} pendents de confirmar · ${data.counts.unsubscribed} baixes</p>
+      <p class="hint">Remitent: ${escapeHtml(data.fromEmail)}. El pla gratuït de Brevo permet uns 300 correus al dia.</p>
+    </div>
+
+    <h2>Envia un relat</h2>
+    <div class="card">
+      <label for="nlPost">Relat</label>
+      <select id="nlPost">
+        ${data.posts.map((p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.title)}${data.sent[p.id] ? ` — ja enviat a ${data.sent[p.id]}` : ''}</option>`).join('')}
+      </select>
+      <label for="nlTest" style="margin-top:1em">Correu per a una prova</label>
+      <div class="row">
+        <input type="email" id="nlTest" placeholder="el-teu@correu.cat" style="flex:1 1 240px">
+        <button type="button" class="secondary" id="nlTestBtn">Envia’m una prova</button>
+      </div>
+      <div class="row" style="margin-top:1em">
+        <button type="button" id="nlSendBtn" ${data.counts.active ? '' : 'disabled'}>Envia a ${data.counts.active} subscripcions</button>
+      </div>
+      <p class="hint" id="nlMsg"></p>
+    </div>
+
+    <h2>Subscriptors</h2>
+    <div class="card">
+      ${data.subscribers.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Correu</th><th>Estat</th><th>Alta</th><th></th></tr></thead>
+        <tbody>${data.subscribers.map((s) => `<tr>
+          <td>${escapeHtml(s.email)}</td><td>${label[s.status] || escapeHtml(s.status)}</td><td>${fmt(s.createdAt)}</td>
+          <td><button type="button" class="danger" data-del="${escapeHtml(s.id)}">Esborra</button></td></tr>`).join('')}</tbody>
+      </table></div>
+      <p class="hint"><a href="/api/newsletter/export">Descarrega la llista (CSV)</a></p>` : '<p class="hint">Encara no hi ha cap subscripció.</p>'}
+    </div>`;
+
+  const msg = document.getElementById('nlMsg');
+  const postId = () => document.getElementById('nlPost').value;
+
+  document.getElementById('nlTestBtn').addEventListener('click', async () => {
+    const to = document.getElementById('nlTest').value.trim();
+    if (!to) { msg.textContent = 'Escriu un correu per a la prova.'; return; }
+    msg.textContent = 'Enviant la prova…';
+    try {
+      const r = await api('/newsletter/send', { method: 'POST', body: { postId: postId(), testTo: to } });
+      msg.textContent = r.ok ? `Prova enviada a ${to}. Revisa també la carpeta de correu brossa.` : 'Brevo no ha acceptat el correu. Comprova la clau i el remitent verificat.';
+    } catch {
+      msg.textContent = 'No s’ha pogut enviar la prova.';
+    }
+  });
+
+  document.getElementById('nlSendBtn').addEventListener('click', async () => {
+    const title = document.getElementById('nlPost').selectedOptions[0].textContent;
+    if (!confirm(`Enviar «${title}» a ${data.counts.active} subscripcions? No es pot desfer.`)) return;
+    const btn = document.getElementById('nlSendBtn');
+    btn.disabled = true;
+    let sent = 0;
+    try {
+      for (let guard = 0; guard < 200; guard++) {
+        const r = await api('/newsletter/send', { method: 'POST', body: { postId: postId() } });
+        sent += r.sent;
+        msg.textContent = `Enviats ${sent} correus… queden ${r.remaining}.`;
+        if (r.remaining <= 0) { msg.textContent = `Fet: enviat a ${sent} subscripcions.`; break; }
+        if (r.sent === 0) { msg.textContent = `S’ha aturat: ${r.failed} errors d’enviament (clau, remitent o límit diari de Brevo). Queden ${r.remaining}; pots tornar-ho a provar més tard i continuarà on s’ha quedat.`; break; }
+      }
+    } catch {
+      msg.textContent = 'S’ha interromput l’enviament; pots tornar-lo a prémer i continuarà on s’ha quedat.';
+    }
+    btn.disabled = false;
+  });
+
+  body.querySelectorAll('[data-del]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      if (!confirm('Esborrar aquesta adreça definitivament?')) return;
+      await api(`/newsletter/subscribers/${b.dataset.del}`, { method: 'DELETE' });
+      renderNewsletter();
+    }),
+  );
 }

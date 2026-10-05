@@ -6,6 +6,7 @@ import { ABOUT_BLOCKS, ABOUT_COVER, ABOUT_DESCRIPTION, ABOUT_LEAD, ABOUT_SUMMARY
 import { RATING_LEGEND, type RatingSummary } from './ratings.mts';
 import { imageSrcset, imageUrl } from './images.mts';
 import { MAP_H, MAP_W, mapView, projectLatLon } from './worldmap.mts';
+import { newsletterEnabled } from './newsletter-config.mts';
 
 // Responsive WebP copies of an uploaded cover image (see images.mts); static SVGs pass through.
 function coverImg(cover: string, widths: number[], sizes: string, extra = ''): string {
@@ -105,6 +106,8 @@ function renderFooter(): string {
   <div class="footer-links">
     <a href="${INSTAGRAM_URL}" target="_blank" rel="noopener noreferrer">${escapeHtml(INSTAGRAM_HANDLE)}</a>
     <a href="/rss.xml">RSS</a>
+    ${newsletterEnabled() ? '<a href="/newsletter/">Newsletter</a>' : ''}
+    <a href="/privacitat/">Privacitat</a>
     <a href="mailto:${CONTACT_EMAIL}">Contacte</a>
     <a href="/panel">Panell</a>
   </div>
@@ -162,6 +165,7 @@ export interface AdjacentPosts {
 }
 
 interface ArticleExtras {
+  newsletter?: boolean;
   toc?: boolean;
   info?: PostInfo;
   reading?: number;
@@ -255,6 +259,7 @@ function renderArticleBody(a: ArticleLike, rating?: RatingProps, extras: Article
     ${refsHtml(a.refs)}
     <div class="ornament-rombo" aria-hidden="true">◆</div>
     ${rating ? renderRatingSection(rating) : ''}
+    ${extras.newsletter ? renderSubscribeForm() : ''}
     ${postNavHtml(extras.adjacent)}
   </div>
 </article>
@@ -270,7 +275,7 @@ const ARTICLE_THEME_BY_SLUG: Record<string, string> = {
   'irlanda-l-illa-maragda': 'page-irlanda',
 };
 
-export function renderArticle(post: Post, rating?: RatingProps, adjacent?: AdjacentPosts): string {
+export function renderArticle(post: Post, rating?: RatingProps, adjacent?: AdjacentPosts, newsletter = false): string {
   const canonical = `${SITE}/blog/${post.slug}/`;
   const theme = post.slug ? ARTICLE_THEME_BY_SLUG[post.slug] : undefined;
   const bodyClass = theme ? `page-article ${theme}` : 'page-article';
@@ -294,7 +299,7 @@ export function renderArticle(post: Post, rating?: RatingProps, adjacent?: Adjac
         refs: post.refs,
       },
       rating,
-      { toc: true, info: post.info, reading: post.reading, adjacent },
+      { toc: true, info: post.info, reading: post.reading, adjacent, newsletter },
     ),
     jsonLd: [
       {
@@ -542,6 +547,106 @@ export function renderDestinations(all: IndexEntry[]): string {
     ogImage: ogImageUrl('/images/hero-home.svg'),
     bodyClass: 'page-blog-index',
     activeNav: '/destinacions',
+    bodyHtml: body,
+  });
+}
+
+/** E-mail sign-up box. Plain HTML form → /api/newsletter/subscribe (no JS). The hidden "website"
+ *  field is a honeypot for bots; real visitors never see or fill it. */
+function renderSubscribeForm(): string {
+  return `<section class="subscribe" aria-labelledby="subscribe-title">
+    <h3 id="subscribe-title">Rep els relats nous al correu</h3>
+    <p>Un correu quan publico un relat. Res més.</p>
+    <form method="post" action="/api/newsletter/subscribe">
+      <div class="subscribe-row">
+        <input type="email" name="email" required autocomplete="email" placeholder="el-teu@correu.cat" aria-label="El teu correu electrònic" maxlength="254">
+        <button type="submit">Subscriu-me</button>
+      </div>
+      <input type="text" name="website" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
+      <label class="consent"><input type="checkbox" name="consent" value="1" required> Accepto rebre la newsletter de ${escapeHtml(SITE_NAME)} i que es guardi la meva adreça fins que em doni de baixa. Més informació a la <a href="/privacitat/">política de privacitat</a>.</label>
+    </form>
+  </section>`;
+}
+
+const NEWSLETTER_PAGES: Record<string, { title: string; text: string }> = {
+  revisa: {
+    title: 'Revisa el correu',
+    text: 'T’hem enviat un missatge per confirmar la subscripció. Prem l’enllaç que hi trobaràs i ja està. Si no el veus d’aquí a uns minuts, mira la carpeta de correu brossa.',
+  },
+  confirmat: { title: 'Subscripció confirmada', text: 'Gràcies! A partir d’ara rebràs un correu cada vegada que publiqui un relat nou.' },
+  'baixa-feta': { title: 'Ja t’has donat de baixa', text: 'No et tornaré a enviar cap correu. Si algun dia canvies d’idea, pots tornar-te a subscriure.' },
+  error: { title: 'Alguna cosa no ha anat bé', text: 'L’enllaç no és vàlid o ha caducat, o s’han fet massa intents seguits. Torna-ho a provar d’aquí a una estona.' },
+  'no-disponible': { title: 'Newsletter no disponible', text: 'La newsletter encara no està activa. Mentrestant, pots seguir el blog per RSS.' },
+};
+
+export function isNewsletterPage(kind: string): boolean {
+  return kind === '' || kind === 'baixa' || kind in NEWSLETTER_PAGES;
+}
+
+/** Small standalone pages of the newsletter flow. `kind` '' is the sign-up page; 'baixa' shows the
+ *  unsubscribe confirmation button for the given id/token. */
+export function renderNewsletterPage(kind: string, params: { id?: string; t?: string } = {}): string {
+  let inner: string;
+  let title: string;
+  if (kind === '') {
+    title = 'Newsletter';
+    inner = newsletterEnabled()
+      ? `<h1>Newsletter</h1>${renderSubscribeForm()}`
+      : `<h1>${NEWSLETTER_PAGES['no-disponible'].title}</h1><p>${NEWSLETTER_PAGES['no-disponible'].text}</p>`;
+  } else if (kind === 'baixa') {
+    title = 'Donar-se de baixa';
+    const valid = /^[a-f0-9]{24}$/.test(params.id ?? '') && /^[a-f0-9]{16,128}$/.test(params.t ?? '');
+    inner = valid
+      ? `<h1>Vols donar-te de baixa?</h1><p>Deixaràs de rebre els relats nous per correu.</p>
+    <form method="post" action="/api/newsletter/unsubscribe">
+      <input type="hidden" name="id" value="${params.id}"><input type="hidden" name="t" value="${params.t}">
+      <button type="submit" class="btn btn-solid">Sí, dona’m de baixa</button>
+    </form>`
+      : `<h1>${NEWSLETTER_PAGES.error.title}</h1><p>${NEWSLETTER_PAGES.error.text}</p>`;
+  } else {
+    const page = NEWSLETTER_PAGES[kind];
+    if (!page) return render404();
+    title = page.title;
+    inner = `<h1>${page.title}</h1><p>${page.text}</p><p><a href="/blog">Torna als relats</a></p>`;
+  }
+  const layout = renderLayout({
+    title: `${title} — ${SITE_NAME}`,
+    description: TAGLINE,
+    canonical: `${SITE}/newsletter/`,
+    ogImage: ogImageUrl('/images/hero-home.svg'),
+    bodyClass: 'page-newsletter',
+    bodyHtml: `<main class="page-newsletter">${inner}</main>`,
+  });
+  return layout.replace('<head>', '<head>\n<meta name="robots" content="noindex,nofollow">');
+}
+
+/** Privacy policy. A draft written for this blog's actual data handling — worth a read by the author. */
+export function renderPrivacy(): string {
+  const body = `<main class="page-article page-legal">
+<article><div class="prose">
+  <div class="title"><h1>Política de privacitat</h1></div>
+  <hr>
+  <h3>Qui és el responsable</h3>
+  <p>${escapeHtml(SITE_NAME)} (${escapeHtml(AUTHOR_NAME)}). Pots escriure’m a <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> per a qualsevol qüestió sobre les teves dades.</p>
+  <h3>Newsletter</h3>
+  <p>Si et subscrius, guardo la teva <strong>adreça de correu</strong>, el moment en què vas demanar la subscripció i en què la vas confirmar, la versió del text de consentiment que vas acceptar i si continues subscrit/a. La finalitat és enviar-te un correu quan publico un relat nou; la base legal és el teu <strong>consentiment</strong>, que pots retirar en qualsevol moment amb l’enllaç «Dona’t de baixa» de cada correu.</p>
+  <p>Les adreces es conserven mentre estiguis subscrit/a. Quan et dones de baixa, ja no t’escric més; si vols que s’esborri del tot, demana-m’ho per correu.</p>
+  <p>Els correus els envia el servei <strong>Brevo</strong> (Sendinblue SAS, França), que actua com a encarregat del tractament només per enviar-los.</p>
+  <h3>Visites i valoracions</h3>
+  <p>Per comptar visites úniques i evitar vots repetits a les valoracions per estrelles, el web desa un codi calculat de manera irreversible a partir de l’adreça IP (amb una sal secreta). <strong>No es guarda la teva IP</strong> ni es fan servir galetes de seguiment ni publicitat.</p>
+  <h3>Altres serveis</h3>
+  <p>El web està allotjat a <strong>Netlify</strong>. Les tipografies es carreguen de <strong>Google Fonts</strong>, de manera que el teu navegador contacta amb Google en visitar qualsevol pàgina. El panell d’administració fa servir una galeta de sessió que només utilitza l’autora.</p>
+  <h3>Els teus drets</h3>
+  <p>Pots demanar l’accés, la rectificació, la supressió, la limitació o l’oposició al tractament de les teves dades, i la seva portabilitat, escrivint a <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>. Si creus que no s’han respectat, pots reclamar davant l’autoritat de protecció de dades (a Catalunya, l’<a href="https://apdcat.gencat.cat/" rel="noopener">Autoritat Catalana de Protecció de Dades</a>).</p>
+  <p><em>Darrera actualització: octubre de 2026.</em></p>
+</div></article>
+</main>`;
+  return renderLayout({
+    title: `Política de privacitat — ${SITE_NAME}`,
+    description: `Com es tracten les dades al blog ${SITE_NAME}.`,
+    canonical: `${SITE}/privacitat/`,
+    ogImage: ogImageUrl('/images/hero-home.svg'),
+    bodyClass: 'page-article page-legal',
     bodyHtml: body,
   });
 }
