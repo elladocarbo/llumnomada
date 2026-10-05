@@ -16,6 +16,7 @@ import { renderPreview } from '../lib/html.mts';
 import { purgeBlogCache, noStoreHeaders } from '../lib/cache.mts';
 import { getStats } from '../lib/hits.mts';
 import { castVote } from '../lib/ratings.mts';
+import { geocodeLocation } from '../lib/geocode.mts';
 import type { Block, Coords, Post, PostInfo, Settings } from '../lib/types.mts';
 import { SESSION_TTL_SECONDS } from '../lib/config.mts';
 
@@ -227,8 +228,36 @@ export default async (request: Request, context: Context) => {
       // Scripts that re-save a post without sending 'info' must not wipe it; the panel always sends it.
       info: body.info === undefined ? existing?.info : sanitizeInfo(body.info),
       country: body.country === undefined ? existing?.country : String(body.country).replace(/[<>]/g, '').trim().slice(0, 80),
-      coords: sanitizeCoords(body.coords, existing?.coords),
     };
+
+    // Map position: coordinates typed in the panel win; otherwise they are looked up from the
+    // location text. The text used is remembered (coordsFrom) so a lookup is only repeated when the
+    // location changes; typed coordinates have no coordsFrom and are never overwritten.
+    let coords = existing?.coords;
+    let coordsFrom = existing?.coordsFrom;
+    if (body.coords !== undefined) {
+      const typed = sanitizeCoords(body.coords, undefined);
+      if (typed) {
+        if (typed.lat !== coords?.lat || typed.lon !== coords?.lon) {
+          coords = typed;
+          coordsFrom = undefined;
+        }
+      } else if (String(body.coords ?? '').trim() === '') {
+        coords = undefined;
+        coordsFrom = undefined;
+      }
+    }
+    const place = post.location.trim();
+    if (place && (!coords || (coordsFrom !== undefined && coordsFrom !== place))) {
+      const geo = await geocodeLocation(place, post.country);
+      if (geo) {
+        coords = { lat: geo.lat, lon: geo.lon };
+        coordsFrom = place;
+        if (!post.country && geo.country) post.country = geo.country;
+      }
+    }
+    post.coords = coords;
+    post.coordsFrom = coordsFrom;
 
     const saved = await savePost(post);
     await purgeBlogCache();
