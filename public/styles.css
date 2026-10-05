@@ -249,6 +249,14 @@ main.page-blog-index .chips a:hover, main.page-blog-index .chips a.current { bor
 /* World map: the static drawing is the background (zoomed inline); pins are plain links. */
 main.page-blog-index .world-map { position: relative; width: 100%; aspect-ratio: var(--ar, 1.6); margin: 0 0 2em; background: #c7d5e6; border: 1px solid rgba(138, 134, 119, 55%); box-shadow: var(--box-shadow); overflow: hidden; }
 main.page-blog-index .world-map .map-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+main.page-blog-index .world-map.is-zoomable { cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+main.page-blog-index .world-map.is-zoomable.zoomed { touch-action: none; }
+main.page-blog-index .world-map.dragging { cursor: grabbing; }
+main.page-blog-index .world-map.far .map-pin .label { display: none; }
+main.page-blog-index .map-controls { position: absolute; top: 8px; right: 8px; z-index: 2; display: flex; flex-direction: column; gap: 4px; }
+main.page-blog-index .map-controls button { width: 34px; height: 34px; padding: 0; border: 1px solid rgba(138, 134, 119, 70%); background: rgba(255, 255, 255, 88%); color: var(--tinta); font-family: var(--font-mono); font-size: 18px; line-height: 1; cursor: pointer; touch-action: manipulation; }
+main.page-blog-index .map-controls button:hover:not(:disabled) { border-color: var(--oro-viejo); }
+main.page-blog-index .map-controls button:disabled { opacity: 0.4; cursor: default; }
 main.page-blog-index .map-pin { position: absolute; display: flex; align-items: center; gap: 0.45em; transform: translate(-7px, -50%); text-decoration: none; color: var(--tinta); }
 main.page-blog-index .map-pin.left { flex-direction: row-reverse; transform: translate(calc(-100% + 7px), -50%); }
 main.page-blog-index .map-pin .dot { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--oro-viejo); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(30, 33, 28, 45%); transition: transform 0.15s; }
