@@ -12,7 +12,7 @@ import {
 } from '../lib/auth.mts';
 import { deletePost, getPost, listIndex, getSettings, newPostId, saveSettings, savePost } from '../lib/store.mts';
 import { sanitizeRichText } from '../lib/sanitize.mts';
-import { renderPreview } from '../lib/html.mts';
+import { renderNewsletterPage, renderPreview } from '../lib/html.mts';
 import { purgeBlogCache, noStoreHeaders } from '../lib/cache.mts';
 import { getStats } from '../lib/hits.mts';
 import { castVote } from '../lib/ratings.mts';
@@ -222,7 +222,12 @@ export default async (request: Request, context: Context) => {
 
   if (path === '/newsletter/confirm' && method === 'GET') {
     const ok = await confirmSubscription(url.searchParams.get('id') ?? '', url.searchParams.get('t') ?? '');
-    return seeOther(ok ? '/newsletter/confirmat/' : '/newsletter/error/');
+    // Answered in place (not redirected): the platform would copy this URL's query — which holds the
+    // secret token — onto the redirect target.
+    return new Response(renderNewsletterPage(ok ? 'confirmat' : 'error'), {
+      status: ok ? 200 : 400,
+      headers: noStoreHeaders({ 'content-type': 'text/html; charset=utf-8' }),
+    });
   }
 
   if (path === '/newsletter/unsubscribe') {
