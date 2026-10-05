@@ -1,6 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { getStore } from '@netlify/blobs';
-import { CONTACT_EMAIL, SITE, SITE_NAME } from './config.mts';
+import { AUTHOR_NAME, CONTACT_EMAIL, SITE, SITE_NAME } from './config.mts';
 import { escapeHtml } from './sanitize.mts';
 import type { Post } from './types.mts';
 
@@ -154,6 +154,8 @@ export interface OutgoingEmail {
   html: string;
   text: string;
   unsubscribeUrl?: string;
+  /** Replies go here instead of the (unmonitored by default) sending address. */
+  replyTo?: string;
 }
 
 export async function sendEmail(mail: OutgoingEmail): Promise<boolean> {
@@ -175,6 +177,7 @@ export async function sendEmail(mail: OutgoingEmail): Promise<boolean> {
         htmlContent: mail.html,
         textContent: mail.text,
         ...(Object.keys(headers).length ? { headers } : {}),
+        ...(mail.replyTo ? { replyTo: { email: mail.replyTo } } : {}),
       }),
       signal: AbortSignal.timeout(6000),
     });
@@ -292,6 +295,75 @@ export async function sendPostBatch(post: Post, budgetMs: number): Promise<Batch
     if (failed >= 8) break; // something is wrong (key, sender, daily limit): stop instead of hammering
   }
   return { sent, failed, remaining: todo.length - sent, total: active.length };
+}
+
+// --- personal invitations ("Convida") -------------------------------------------------------------
+// A single, one-off message to someone the author knows, pointing to the public sign-up page. The
+// recipient still has to subscribe (and confirm) on their own. Only a one-way hash of the address
+// is kept, to never invite the same person twice; addresses are not stored.
+
+export const INVITE_DAILY_LIMIT = 20;
+export const INVITE_BATCH_LIMIT = 10;
+
+export function invitationEmail(to: string, note: string): OutgoingEmail {
+  const url = `${SITE}/newsletter/`;
+  const safeNote = note.trim().slice(0, 400);
+  const noteHtml = safeNote ? `<p style="margin:0 0 14px;padding:10px 14px;border-left:3px solid ${GOLD};font-style:italic;">${escapeHtml(safeNote).replace(/\n/g, '<br>')}</p>` : '';
+  return {
+    to,
+    subject: `${AUTHOR_NAME} et convida a ${SITE_NAME}`,
+    html: frame(
+      `<p style="margin:0 0 12px;">Hola!</p><p style="margin:0 0 12px;">Sóc ${escapeHtml(AUTHOR_NAME)}, i escric ${escapeHtml(SITE_NAME)}, un blog de viatges. T’escric per convidar-te a rebre els relats nous per correu quan els publiqui.</p>${noteHtml}${button(url, 'Vull subscriure’m')}<p style="margin:0;font-size:14px;color:#5b584d;">No t’has subscrit encara: només ho estaràs si fas clic al botó i confirmes la teva adreça.</p>`,
+      `Aquest és un missatge únic, enviat personalment per ${escapeHtml(AUTHOR_NAME)}. Si no t’interessa, ignora’l: no et tornaré a escriure. Pots respondre a aquest correu. · ${escapeHtml(CONTACT_EMAIL)}`,
+    ),
+    text: `Hola! Sóc ${AUTHOR_NAME}, i escric ${SITE_NAME}, un blog de viatges. Et convido a rebre els relats nous per correu.${safeNote ? `\n\n"${safeNote}"` : ''}\n\nPer subscriure't: ${url}\n\nAquest és un missatge únic; si no t'interessa, ignora'l: no et tornaré a escriure.`,
+    replyTo: process.env.NEWSLETTER_FROM_EMAIL || CONTACT_EMAIL,
+  };
+}
+
+export type InviteResult = 'sent' | 'invalid' | 'already_subscribed' | 'already_invited' | 'daily_limit' | 'failed';
+
+/** Invites each address (at most INVITE_BATCH_LIMIT per call and INVITE_DAILY_LIMIT per day). */
+export async function inviteAddresses(rawEmails: string[], note: string): Promise<Array<{ email: string; result: InviteResult }>> {
+  const s = store();
+  const day = new Date().toISOString().slice(0, 10);
+  const counterKey = `invite-day/${day}`;
+  let usedToday = Number((await s.get(counterKey)) ?? '0') || 0;
+
+  const out: Array<{ email: string; result: InviteResult }> = [];
+  const seen = new Set<string>();
+  for (const raw of rawEmails.slice(0, INVITE_BATCH_LIMIT)) {
+    const email = normalizeEmail(raw);
+    if (!email) {
+      out.push({ email: String(raw).slice(0, 80), result: 'invalid' });
+      continue;
+    }
+    const id = emailId(email);
+    if (seen.has(id)) continue;
+    seen.add(id);
+
+    // Anyone already on the list — including people who unsubscribed — is never invited.
+    if (await getSubscriber(id)) {
+      out.push({ email, result: 'already_subscribed' });
+      continue;
+    }
+    if ((await s.get(`invited/${id}`)) !== null) {
+      out.push({ email, result: 'already_invited' });
+      continue;
+    }
+    if (usedToday >= INVITE_DAILY_LIMIT) {
+      out.push({ email, result: 'daily_limit' });
+      continue;
+    }
+    const ok = await sendEmail(invitationEmail(email, note));
+    if (ok) {
+      usedToday++;
+      await s.set(`invited/${id}`, new Date().toISOString());
+      await s.set(counterKey, String(usedToday));
+    }
+    out.push({ email, result: ok ? 'sent' : 'failed' });
+  }
+  return out;
 }
 
 export function subscribersCsv(subs: Subscriber[]): string {

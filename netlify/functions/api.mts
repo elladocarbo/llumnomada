@@ -26,6 +26,9 @@ import {
   confirmationEmail,
   deleteSubscriber,
   hashVisitor,
+  INVITE_BATCH_LIMIT,
+  INVITE_DAILY_LIMIT,
+  inviteAddresses,
   listSubscribers,
   normalizeEmail,
   postEmail,
@@ -419,6 +422,19 @@ export default async (request: Request, context: Context) => {
       return json({ ok: await sendEmail(postEmail(post, to)) });
     }
     return json(await sendPostBatch(post, 7000));
+  }
+
+  if (path === '/newsletter/invite' && method === 'POST') {
+    if (!newsletterEnabled()) return json({ error: 'not_configured' }, 400);
+    const body = (await request.json()) as { emails?: unknown; note?: unknown; knowsThem?: unknown };
+    if (body.knowsThem !== true) return json({ error: 'confirmation_required' }, 400);
+    const emails = Array.isArray(body.emails) ? body.emails.map((e) => String(e)) : [];
+    if (!emails.length) return json({ error: 'no_emails' }, 400);
+    return json({
+      results: await inviteAddresses(emails, String(body.note ?? '')),
+      dailyLimit: INVITE_DAILY_LIMIT,
+      batchLimit: INVITE_BATCH_LIMIT,
+    });
   }
 
   const subscriberMatch = path.match(/^\/newsletter\/subscribers\/([a-f0-9]{24})$/);
