@@ -1,5 +1,5 @@
 import type { Block, IndexEntry, Post, PostInfo } from './types.mts';
-import { SITE, SITE_NAME, TAGLINE, AUTHOR_NAME, CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from './config.mts';
+import { SITE, SITE_NAME, TAGLINE, AUTHOR_NAME, AUTHOR_LEGAL_NAME, CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from './config.mts';
 import { decodeHtmlEntities, escapeHtml } from './sanitize.mts';
 import { renderBlocks, renderToc } from './blocks.mts';
 import { ABOUT_BLOCKS, ABOUT_COVER, ABOUT_DESCRIPTION, ABOUT_LEAD, ABOUT_SUMMARY, ABOUT_TITLE } from '../seed/about.mts';
@@ -64,9 +64,8 @@ function renderLayout(opts: LayoutOpts): string {
 <meta property="og:description" content="${escapeHtml(decodeHtmlEntities(opts.description))}">
 <meta property="og:image" content="${opts.ogImage}">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;600&family=Uncial+Antiqua&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/cinzel-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">
 <link rel="stylesheet" href="/styles.css">
 ${opts.jsonLd ? jsonLdScript(opts.jsonLd) : ''}
 </head>
@@ -622,20 +621,31 @@ export function renderNewsletterPage(kind: string, params: { id?: string; t?: st
 
 /** Privacy policy. A draft written for this blog's actual data handling — worth a read by the author. */
 export function renderPrivacy(): string {
+  const owner = AUTHOR_LEGAL_NAME ? `${escapeHtml(AUTHOR_LEGAL_NAME)}, titular de ${escapeHtml(SITE_NAME)}` : `${escapeHtml(SITE_NAME)} (${escapeHtml(AUTHOR_NAME)})`;
   const body = `<main class="page-article page-legal">
 <article><div class="prose">
   <div class="title"><h1>Política de privacitat</h1></div>
   <hr>
   <h3>Qui és el responsable</h3>
-  <p>${escapeHtml(SITE_NAME)} (${escapeHtml(AUTHOR_NAME)}). Pots escriure’m a <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> per a qualsevol qüestió sobre les teves dades.</p>
+  <p>${owner}. Pots escriure’m a <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> per a qualsevol qüestió sobre les teves dades. Aquest és un blog personal, sense publicitat ni ingressos.</p>
+
   <h3>Newsletter</h3>
-  <p>Si et subscrius, guardo la teva <strong>adreça de correu</strong>, el moment en què vas demanar la subscripció i en què la vas confirmar, la versió del text de consentiment que vas acceptar i si continues subscrit/a. La finalitat és enviar-te un correu quan publico un relat nou; la base legal és el teu <strong>consentiment</strong>, que pots retirar en qualsevol moment amb l’enllaç «Dona’t de baixa» de cada correu.</p>
-  <p>Les adreces es conserven mentre estiguis subscrit/a. Quan et dones de baixa, ja no t’escric més; si vols que s’esborri del tot, demana-m’ho per correu.</p>
-  <p>Els correus els envia el servei <strong>Brevo</strong> (Sendinblue SAS, França), que actua com a encarregat del tractament només per enviar-los.</p>
+  <p>Si et subscrius, guardo la teva <strong>adreça de correu</strong>, el moment en què vas demanar la subscripció i en què la vas confirmar, la versió del text de consentiment que vas acceptar i si continues subscrit/a. La finalitat és enviar-te un correu quan publico un relat nou. La base legal és el teu <strong>consentiment</strong>, que pots retirar en qualsevol moment amb l’enllaç «Dona’t de baixa» de cada correu.</p>
+  <p>La subscripció només es fa efectiva quan confirmes l’adreça amb l’enllaç que t’envio. <strong>Les adreces que no es confirmen s’esborren automàticament als 30 dies.</strong> Les subscripcions confirmades es conserven mentre estiguis subscrit/a; en donar-te de baixa deixo d’escriure’t i només conservo l’adreça marcada com a «de baixa» perquè no se’t torni a enviar res per error. Si vols que s’esborri del tot, demana-m’ho per correu.</p>
+
+  <h3>Invitacions personals</h3>
+  <p>Algunes vegades convido personalment una persona que conec a subscriure’s, amb un únic missatge que conté l’enllaç al formulari. La base és l’interès legítim a donar a conèixer el blog a persones del meu entorn, amb un missatge breu, personal i sense cap seguiment. No guardo l’adreça: només un codi irreversible, per no convidar la mateixa persona dues vegades. No s’inclou ningú a la llista sense que ho confirmi ell mateix. Si no t’interessa, ignora el missatge i no et tornaré a escriure.</p>
+
   <h3>Visites i valoracions</h3>
-  <p>Per comptar visites úniques i evitar vots repetits a les valoracions per estrelles, el web desa un codi calculat de manera irreversible a partir de l’adreça IP (amb una sal secreta). <strong>No es guarda la teva IP</strong> ni es fan servir galetes de seguiment ni publicitat.</p>
-  <h3>Altres serveis</h3>
-  <p>El web està allotjat a <strong>Netlify</strong>. Les tipografies es carreguen de <strong>Google Fonts</strong>, de manera que el teu navegador contacta amb Google en visitar qualsevol pàgina. El panell d’administració fa servir una galeta de sessió que només utilitza l’autora.</p>
+  <p>Per comptar visites úniques, el web calcula un codi irreversible a partir de l’adreça IP i d’una sal secreta que canvia cada dia; <strong>no es guarda la IP</strong>. Aquests codis es descarten passats dos dies i només en queda el recompte. Per evitar vots repetits a les valoracions per estrelles es guarda un altre codi irreversible per relat, mentre el relat és al web. La base legal és l’interès legítim a conèixer l’ús del blog i mantenir unes valoracions fiables. No faig servir galetes de seguiment ni publicitat.</p>
+
+  <h3>Allotjament i serveis</h3>
+  <p>El web està allotjat a <strong>Netlify</strong>, que, com qualsevol servidor, registra temporalment l’adreça IP de cada petició per raons de seguretat i funcionament. Les tipografies es serveixen des del mateix web: <strong>el teu navegador no contacta amb Google ni cap altre tercer</strong> en visitar les pàgines. Els correus de la newsletter els envia <strong>Brevo</strong> (Sendinblue SAS, França), que actua com a encarregat del tractament només per enviar-los. Aquests proveïdors poden tractar dades fora de la Unió Europea amb les garanties contractuals que exigeix la normativa.</p>
+  <p>El panell d’administració fa servir una galeta de sessió que només utilitza l’autora.</p>
+
+  <h3>Menors</h3>
+  <p>Aquest web no va dirigit a menors de 14 anys. Si ets menor de 14 anys, no et subscriguis a la newsletter sense el consentiment dels teus pares o tutors.</p>
+
   <h3>Els teus drets</h3>
   <p>Pots demanar l’accés, la rectificació, la supressió, la limitació o l’oposició al tractament de les teves dades, i la seva portabilitat, escrivint a <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>. Si creus que no s’han respectat, pots reclamar davant l’autoritat de protecció de dades (a Catalunya, l’<a href="https://apdcat.gencat.cat/" rel="noopener">Autoritat Catalana de Protecció de Dades</a>).</p>
   <p><em>Darrera actualització: octubre de 2026.</em></p>

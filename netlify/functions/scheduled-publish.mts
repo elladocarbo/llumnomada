@@ -1,6 +1,7 @@
 import type { Config } from '@netlify/functions';
 import { getPost, listIndex, savePost } from '../lib/store.mts';
 import { purgeBlogCache } from '../lib/cache.mts';
+import { maybeRunDailyCleanup } from '../lib/newsletter.mts';
 
 export default async () => {
   const index = await listIndex();
@@ -18,6 +19,13 @@ export default async () => {
   }
 
   if (published > 0) await purgeBlogCache();
+
+  // Once a day: drop unconfirmed newsletter sign-ups older than 30 days (see the privacy policy).
+  try {
+    await maybeRunDailyCleanup();
+  } catch {
+    // housekeeping must never break scheduled publishing
+  }
 
   return new Response(JSON.stringify({ ok: true, published }), { headers: { 'content-type': 'application/json' } });
 };
