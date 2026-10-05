@@ -35,6 +35,8 @@ export interface Post {
   country?: string;
   /** Where to put this relat's pin on the world map of "Destinacions". */
   coords?: Coords;
+  /** Location text the coordinates were looked up from; absent when they were typed by hand. */
+  coordsFrom?: string;
   date: string;
   updated: string;
   status: 'draft' | 'published';

@@ -313,7 +313,8 @@ async function renderEditor(id) {
       <input type="text" id="fCountry" value="${escapeHtml(post.country || '')}" placeholder="p. ex. Irlanda — serveix per agrupar els relats a Destinacions">
 
       <label for="fCoords">Coordenades per al mapa (opcional)</label>
-      <input type="text" id="fCoords" value="${post.coords ? `${post.coords.lat}, ${post.coords.lon}` : ''}" placeholder="p. ex. 53.35, -6.26 — latitud i longitud (es copien fent clic dret al lloc a Google Maps)">
+      <input type="text" id="fCoords" value="${post.coords ? `${post.coords.lat}, ${post.coords.lon}` : ''}" placeholder="Es calculen soles a partir de la ubicació">
+      <p class="hint">Deixa-ho buit: en desar, es busca sola la posició de la «Ubicació» (i el país, si el deixes buit). Si no és la que vols, escriu-hi latitud i longitud (p. ex. 53.35, -6.26; es copien amb clic dret al lloc a Google Maps) i no es tocarà.</p>
 
       <label>Fitxa pràctica (opcional; els camps buits no es mostren)</label>
       <div class="row" style="flex-wrap:wrap">
