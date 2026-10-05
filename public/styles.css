@@ -198,7 +198,7 @@ a.tag:hover { border-color: var(--oro-viejo); color: var(--tinta); }
 /* Footer */
 .site-footer { background: var(--tinta); color: var(--vitela); text-align: center; padding: 3em 1em; margin-top: 4em; }
 .site-footer p { color: var(--vitela); opacity: 0.85; font-size: 0.9em; }
-.footer-links { display: flex; justify-content: center; gap: 1.5em; margin-top: 1em; }
+.footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6em 1.5em; margin-top: 1em; }
 .footer-links a { color: var(--oro-logo); text-decoration: underline; font-family: var(--font-mono); text-transform: uppercase; font-size: 0.75em; letter-spacing: 0.04em; }
 .footer-links a:hover { color: var(--vitela); }
 
@@ -424,6 +424,8 @@ button.stars:focus-visible {
 @media (max-width: 480px) { .subscribe-row { flex-direction: column; } .subscribe button { padding: 0.8em 1em; } }
 .page-newsletter main, main.page-newsletter { text-align: center; padding: 4em 1em; }
 main.page-newsletter .subscribe { max-width: 560px; margin: 2em auto; }
+main.page-newsletter h1 { overflow-wrap: anywhere; }
+@media (max-width: 720px) { main.page-newsletter h1 { font-size: 1.8em; } }
 .page-legal .prose > p:first-of-type::first-letter { all: unset; }
 
 /* 404 */
