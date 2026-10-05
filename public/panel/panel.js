@@ -617,6 +617,18 @@ async function renderNewsletter() {
       <p class="hint" id="nlMsg"></p>
     </div>
 
+    <h2>Convida algú</h2>
+    <div class="card">
+      <p class="hint">Envia un únic missatge amb l’enllaç per subscriure’s a persones que coneixes. No queden afegides a la llista: s’hi subscriuen elles, i han de confirmar-ho. Màxim 10 adreces per cop i 20 al dia. No s’envia a qui ja hi és ni a qui s’ha donat de baixa.</p>
+      <label for="invEmails">Adreces (una per línia, o separades per comes)</label>
+      <textarea id="invEmails" rows="4" placeholder="amic@correu.cat&#10;germana@correu.cat"></textarea>
+      <label for="invNote" style="margin-top:1em">Un missatge personal (opcional, màx. 400 caràcters)</label>
+      <textarea id="invNote" rows="2" maxlength="400" placeholder="Ex.: T’he parlat del meu blog; hi explico els viatges que faig."></textarea>
+      <label style="margin-top:1em;display:flex;gap:.5em;align-items:flex-start"><input type="checkbox" id="invKnow"> Conec personalment aquestes persones i és raonable que rebin aquest missatge.</label>
+      <div class="row" style="margin-top:1em"><button type="button" id="invBtn">Envia les invitacions</button></div>
+      <p class="hint" id="invMsg"></p>
+    </div>
+
     <h2>Subscriptors</h2>
     <div class="card">
       ${data.subscribers.length ? `<div class="table-wrap"><table>
@@ -661,6 +673,31 @@ async function renderNewsletter() {
       msg.textContent = 'S’ha interromput l’enviament; pots tornar-lo a prémer i continuarà on s’ha quedat.';
     }
     btn.disabled = false;
+  });
+
+  document.getElementById('invBtn').addEventListener('click', async () => {
+    const out = document.getElementById('invMsg');
+    const emails = document.getElementById('invEmails').value.split(/[\s,;]+/).map((e) => e.trim()).filter(Boolean);
+    if (!emails.length) { out.textContent = 'Escriu almenys una adreça.'; return; }
+    if (!document.getElementById('invKnow').checked) { out.textContent = 'Cal confirmar que coneixes aquestes persones.'; return; }
+    if (!confirm(`Enviar una invitació a ${Math.min(emails.length, 10)} adreça(es)?`)) return;
+    out.textContent = 'Enviant…';
+    try {
+      const r = await api('/newsletter/invite', { method: 'POST', body: { emails, note: document.getElementById('invNote').value, knowsThem: true } });
+      const text = {
+        sent: 'invitació enviada',
+        invalid: 'adreça no vàlida',
+        already_subscribed: 'ja és a la llista (o s’ha donat de baixa): no s’envia',
+        already_invited: 'ja l’havies convidat: no s’envia dues vegades',
+        daily_limit: 'límit diari assolit: ho pots provar demà',
+        failed: 'Brevo no ha acceptat el correu',
+      };
+      const extra = emails.length > r.batchLimit ? `\n(Només s’han tractat les ${r.batchLimit} primeres adreces; envia les altres en un altre moment.)` : '';
+      out.style.whiteSpace = 'pre-line';
+      out.textContent = r.results.map((x) => `${x.email}: ${text[x.result] || x.result}`).join('\n') + extra;
+    } catch (err) {
+      out.textContent = err.data?.error === 'confirmation_required' ? 'Cal confirmar que coneixes aquestes persones.' : 'No s’han pogut enviar les invitacions.';
+    }
   });
 
   body.querySelectorAll('[data-del]').forEach((b) =>
