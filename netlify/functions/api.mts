@@ -18,7 +18,24 @@ import { getStats } from '../lib/hits.mts';
 import { castVote } from '../lib/ratings.mts';
 import { geocodeLocation } from '../lib/geocode.mts';
 import type { Block, Coords, Post, PostInfo, Settings } from '../lib/types.mts';
-import { SESSION_TTL_SECONDS } from '../lib/config.mts';
+import { CONTACT_EMAIL, SESSION_TTL_SECONDS } from '../lib/config.mts';
+import { newsletterEnabled } from '../lib/newsletter-config.mts';
+import {
+  allowRequest,
+  confirmSubscription,
+  confirmationEmail,
+  deleteSubscriber,
+  hashVisitor,
+  listSubscribers,
+  normalizeEmail,
+  postEmail,
+  requestSubscription,
+  sendEmail,
+  sendPostBatch,
+  sentCount,
+  subscribersCsv,
+  unsubscribe,
+} from '../lib/newsletter.mts';
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
@@ -178,6 +195,58 @@ export default async (request: Request, context: Context) => {
     return new Response(null, { status: 303, headers: noStoreHeaders({ location: back }) });
   }
 
+  // ---- Newsletter: public endpoints (subscribe, confirm, unsubscribe) ----
+  const seeOther = (where: string) => new Response(null, { status: 303, headers: noStoreHeaders({ location: where }) });
+
+  if (path === '/newsletter/subscribe' && method === 'POST') {
+    if (!newsletterEnabled()) return seeOther('/newsletter/no-disponible/');
+    const origin = request.headers.get('origin');
+    if (origin && origin !== url.origin) return seeOther('/newsletter/error/');
+    let form: FormData;
+    try {
+      form = await request.formData();
+    } catch {
+      return seeOther('/newsletter/error/');
+    }
+    if (String(form.get('website') ?? '')) return seeOther('/newsletter/revisa/'); // honeypot: bots fill it
+    const email = normalizeEmail(form.get('email'));
+    const secret = process.env.SESSION_SECRET;
+    if (!email || form.get('consent') !== '1' || !secret) return seeOther('/newsletter/error/');
+    if (!(await allowRequest(hashVisitor(getClientIp(request, context), secret)))) return seeOther('/newsletter/error/');
+
+    const { subscriber, sendConfirmation } = await requestSubscription(email);
+    if (sendConfirmation && !(await sendEmail(confirmationEmail(subscriber)))) return seeOther('/newsletter/error/');
+    // Same answer whether or not the address was already subscribed, so it can't be probed.
+    return seeOther('/newsletter/revisa/');
+  }
+
+  if (path === '/newsletter/confirm' && method === 'GET') {
+    const ok = await confirmSubscription(url.searchParams.get('id') ?? '', url.searchParams.get('t') ?? '');
+    return seeOther(ok ? '/newsletter/confirmat/' : '/newsletter/error/');
+  }
+
+  if (path === '/newsletter/unsubscribe') {
+    // A plain GET (a link in a mail) only opens the confirmation page: mail scanners that pre-open
+    // links must not unsubscribe anyone. The actual unsubscribe is a POST (button or one-click header).
+    if (method === 'GET') {
+      return seeOther(`/newsletter/baixa/?id=${encodeURIComponent(url.searchParams.get('id') ?? '')}&t=${encodeURIComponent(url.searchParams.get('t') ?? '')}`);
+    }
+    if (method === 'POST') {
+      let id = url.searchParams.get('id') ?? '';
+      let token = url.searchParams.get('t') ?? '';
+      try {
+        const form = await request.formData();
+        id = String(form.get('id') ?? id);
+        token = String(form.get('t') ?? token);
+      } catch {
+        // one-click POSTs carry the ids in the query string
+      }
+      const ok = await unsubscribe(id, token);
+      if ((request.headers.get('accept') ?? '').includes('text/html')) return seeOther(ok ? '/newsletter/baixa-feta/' : '/newsletter/error/');
+      return new Response(ok ? 'ok' : 'invalid', { status: ok ? 200 : 400, headers: noStoreHeaders({ 'content-type': 'text/plain' }) });
+    }
+  }
+
   // Everything past this point requires a valid session.
   const auth = requireAuth(request);
   if (auth instanceof Response) return auth;
@@ -305,6 +374,52 @@ export default async (request: Request, context: Context) => {
     const buf = await file.arrayBuffer();
     await getStore('images').set(id, buf, { metadata: { type: file.type } });
     return json({ id, url: `/img/${id}` });
+  }
+
+  // ---- Newsletter: admin ----
+  if (path === '/newsletter' && method === 'GET') {
+    const subs = await listSubscribers();
+    const published = (await listIndex()).filter((p) => p.status === 'published' && p.slug);
+    const sent: Record<string, number> = {};
+    if (newsletterEnabled()) for (const p of published) sent[p.id] = await sentCount(p.id);
+    return json({
+      enabled: newsletterEnabled(),
+      fromEmail: process.env.NEWSLETTER_FROM_EMAIL || CONTACT_EMAIL,
+      counts: {
+        active: subs.filter((x) => x.status === 'active').length,
+        pending: subs.filter((x) => x.status === 'pending').length,
+        unsubscribed: subs.filter((x) => x.status === 'unsubscribed').length,
+      },
+      subscribers: subs.map(({ id, email, status, createdAt, confirmedAt }) => ({ id, email, status, createdAt, confirmedAt })),
+      posts: published.map((p) => ({ id: p.id, title: p.title, date: p.date })),
+      sent,
+    });
+  }
+
+  if (path === '/newsletter/export' && method === 'GET') {
+    return new Response(subscribersCsv(await listSubscribers()), {
+      headers: noStoreHeaders({ 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="subscriptors.csv"' }),
+    });
+  }
+
+  if (path === '/newsletter/send' && method === 'POST') {
+    if (!newsletterEnabled()) return json({ error: 'not_configured' }, 400);
+    const body = (await request.json()) as { postId?: string; testTo?: string };
+    const post = body.postId ? await getPost(String(body.postId)) : null;
+    if (!post || post.status !== 'published' || !post.slug) return json({ error: 'post_not_published' }, 400);
+
+    if (body.testTo !== undefined) {
+      const to = normalizeEmail(body.testTo);
+      if (!to) return json({ error: 'invalid_email' }, 400);
+      return json({ ok: await sendEmail(postEmail(post, to)) });
+    }
+    return json(await sendPostBatch(post, 7000));
+  }
+
+  const subscriberMatch = path.match(/^\/newsletter\/subscribers\/([a-f0-9]{24})$/);
+  if (subscriberMatch && method === 'DELETE') {
+    await deleteSubscriber(subscriberMatch[1]);
+    return json({ ok: true });
   }
 
   if (path === '/stats' && method === 'GET') {
