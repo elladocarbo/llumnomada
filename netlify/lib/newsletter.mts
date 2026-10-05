@@ -2,6 +2,7 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { getStore } from '@netlify/blobs';
 import { AUTHOR_NAME, CONTACT_EMAIL, SITE, SITE_NAME } from './config.mts';
 import { escapeHtml } from './sanitize.mts';
+import { compactOldDays } from './hits.mts';
 import type { Post } from './types.mts';
 
 // ---------------------------------------------------------------------------------------------
@@ -364,6 +365,46 @@ export async function inviteAddresses(rawEmails: string[], note: string): Promis
     out.push({ email, result: ok ? 'sent' : 'failed' });
   }
   return out;
+}
+
+// --- housekeeping -------------------------------------------------------------------------------
+
+export const PENDING_MAX_AGE_DAYS = 30;
+
+/** Deletes sign-ups that were never confirmed within PENDING_MAX_AGE_DAYS, plus expired rate-limit
+ *  records. Safe to call often; `maybeRunDailyCleanup` makes it run once a day. */
+export async function purgeStale(): Promise<{ pendingRemoved: number; rateRecordsRemoved: number }> {
+  const s = store();
+  const cutoff = Date.now() - PENDING_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+  let pendingRemoved = 0;
+  for (const sub of await listSubscribers()) {
+    if (sub.status === 'pending' && new Date(sub.createdAt).getTime() < cutoff) {
+      await s.delete(`subs/${sub.id}.json`);
+      pendingRemoved++;
+    }
+  }
+
+  let rateRecordsRemoved = 0;
+  const { blobs } = await s.list({ prefix: 'rl/' });
+  const windowStart = Date.now() - RATE_LIMIT_WINDOW_MS;
+  for (const b of blobs) {
+    const times = ((await s.get(b.key, { type: 'json' })) as number[] | null) ?? [];
+    if (!times.some((t) => t > windowStart)) {
+      await s.delete(b.key);
+      rateRecordsRemoved++;
+    }
+  }
+  return { pendingRemoved, rateRecordsRemoved };
+}
+
+export async function maybeRunDailyCleanup(): Promise<boolean> {
+  const s = store();
+  const today = new Date().toISOString().slice(0, 10);
+  if ((await s.get('cleanup/last')) === today) return false;
+  await s.set('cleanup/last', today);
+  await purgeStale();
+  await compactOldDays();
+  return true;
 }
 
 export function subscribersCsv(subs: Subscriber[]): string {
