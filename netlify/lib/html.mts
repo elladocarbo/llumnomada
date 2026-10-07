@@ -7,6 +7,7 @@ import { RATING_LEGEND, type RatingSummary } from './ratings.mts';
 import { imageSrcset, imageUrl } from './images.mts';
 import { MAP_H, MAP_W, mapView, projectLatLon } from './worldmap.mts';
 import { newsletterEnabled } from './newsletter-config.mts';
+import { seriesSlug } from './series.mts';
 
 // Responsive WebP copies of an uploaded cover image (see images.mts); static SVGs pass through.
 function coverImg(cover: string, widths: number[], sizes: string, extra = ''): string {
@@ -157,13 +158,29 @@ interface NavLink {
 }
 
 export interface AdjacentPosts {
-  /** Next-older published post. */
+  /** Next-older published post (or the previous part of a series). */
   prev?: NavLink;
-  /** Next-newer published post. */
+  /** Next-newer published post (or the next part of a series). */
   next?: NavLink;
+  prevLabel?: string;
+  nextLabel?: string;
+}
+
+export interface SeriesItem {
+  slug: string;
+  label: string;
+  order: number;
+  reading: number;
+  current: boolean;
+}
+
+export interface SeriesBox {
+  name: string;
+  items: SeriesItem[];
 }
 
 interface ArticleExtras {
+  series?: SeriesBox;
   newsletter?: boolean;
   toc?: boolean;
   info?: PostInfo;
@@ -186,11 +203,27 @@ function infoHtml(info?: PostInfo): string {
   return `<aside class="trip-info" aria-label="Fitxa pràctica"><h2>Fitxa pràctica</h2><dl>${rows.join('')}</dl></aside>`;
 }
 
+function seriesBoxHtml(series?: SeriesBox): string {
+  if (!series || series.items.length < 2) return '';
+  const parts = series.items.filter((i) => i.order > 0).length;
+  const rows = series.items
+    .map((i) => {
+      const num = i.order > 0 ? String(i.order) : '·';
+      const text = i.order > 0 ? escapeHtml(i.label) : `Per començar: ${escapeHtml(i.label)}`;
+      const tail = i.current ? '<em>ets aquí</em>' : `<em>${i.reading} min</em>`;
+      return i.current
+        ? `<li class="cur"><b>${num}</b><span>${text}</span>${tail}</li>`
+        : `<li><b>${num}</b><a href="/blog/${i.slug}/">${text}</a>${tail}</li>`;
+    })
+    .join('');
+  return `<aside class="series-box" aria-label="Aquest relat forma part d’una sèrie"><div class="k">Sèrie · ${parts} ${parts === 1 ? 'part' : 'parts'}</div><div class="t"><a href="/serie/${seriesSlug(series.name)}/">${escapeHtml(series.name)}</a></div><ol>${rows}</ol></aside>`;
+}
+
 function postNavHtml(adjacent?: AdjacentPosts): string {
   if (!adjacent?.prev && !adjacent?.next) return '';
   const link = (cls: string, label: string, l?: NavLink) =>
     l ? `<a class="${cls}" href="/blog/${l.slug}/"><span>${label}</span><strong>${escapeHtml(l.title)}</strong></a>` : '';
-  return `<nav class="post-nav" aria-label="Més relats">${link('prev', '← Relat anterior', adjacent.prev)}${link('next', 'Relat següent →', adjacent.next)}</nav>`;
+  return `<nav class="post-nav" aria-label="Més relats">${link('prev', adjacent.prevLabel ?? '← Relat anterior', adjacent.prev)}${link('next', adjacent.nextLabel ?? 'Relat següent →', adjacent.next)}</nav>`;
 }
 
 function refsHtml(refs?: string[]): string {
@@ -252,6 +285,7 @@ function renderArticleBody(a: ArticleLike, rating?: RatingProps, extras: Article
     </div>
     <hr>
     <p>${a.lead}</p>
+    ${seriesBoxHtml(extras.series)}
     ${infoHtml(extras.info)}
     ${extras.toc ? renderToc(a.blocks) : ''}
     ${renderBlocks(a.blocks)}
@@ -274,9 +308,14 @@ const ARTICLE_THEME_BY_SLUG: Record<string, string> = {
   'irlanda-l-illa-maragda': 'page-irlanda',
 };
 
-export function renderArticle(post: Post, rating?: RatingProps, adjacent?: AdjacentPosts, newsletter = false): string {
+// The same treatment applies to every part of a series, keyed by the series' slug.
+const SERIES_THEME: Record<string, string> = {
+  'irlanda-l-illa-maragda': 'page-irlanda',
+};
+
+export function renderArticle(post: Post, rating?: RatingProps, adjacent?: AdjacentPosts, newsletter = false, series?: SeriesBox): string {
   const canonical = `${SITE}/blog/${post.slug}/`;
-  const theme = post.slug ? ARTICLE_THEME_BY_SLUG[post.slug] : undefined;
+  const theme = (post.slug ? ARTICLE_THEME_BY_SLUG[post.slug] : undefined) ?? (post.series ? SERIES_THEME[seriesSlug(post.series)] : undefined);
   const bodyClass = theme ? `page-article ${theme}` : 'page-article';
   return renderLayout({
     title: `${post.title} — ${SITE_NAME}`,
@@ -298,7 +337,7 @@ export function renderArticle(post: Post, rating?: RatingProps, adjacent?: Adjac
         refs: post.refs,
       },
       rating,
-      { toc: true, info: post.info, reading: post.reading, adjacent, newsletter },
+      { toc: true, info: post.info, reading: post.reading, adjacent, newsletter, series },
     ),
     jsonLd: [
       {
@@ -311,6 +350,7 @@ export function renderArticle(post: Post, rating?: RatingProps, adjacent?: Adjac
         image: ogImageUrl(post.cover || '/images/hero-home.svg'),
         mainEntityOfPage: canonical,
         author: { '@type': 'Person', name: AUTHOR_NAME, jobTitle: 'Autora de viatges' },
+        ...(post.series ? { isPartOf: { '@type': 'CreativeWorkSeries', name: post.series, url: `${SITE}/serie/${seriesSlug(post.series)}/` } } : {}),
       },
       {
         '@context': 'https://schema.org',
@@ -698,10 +738,49 @@ ${items}
 </channel></rss>`;
 }
 
+/** Landing page of a series: its overview post (order 0) and the numbered parts as cards. */
+export function renderSeriesPage(members: IndexEntry[]): string {
+  const name = members[0].series ?? '';
+  const slug = seriesSlug(name);
+  const overview = members.find((m) => (m.seriesOrder ?? 0) === 0);
+  const parts = members.filter((m) => (m.seriesOrder ?? 0) > 0);
+  const cards = parts
+    .map(
+      (p) => `<li><a href="/blog/${p.slug}/">
+        ${coverImg(p.cover, [480, 800], '(max-width: 720px) 90vw, 330px', ' loading="lazy" decoding="async"')}
+        <h4 class="title">${p.seriesOrder} · ${escapeHtml(p.seriesLabel || p.title)}</h4>
+        <div class="meta"><span>${p.reading} min de lectura</span></div>
+      </a></li>`,
+    )
+    .join('');
+  const intro = overview ? `<p class="intro">${overview.lead}</p>` : '';
+  const start = overview
+    ? `<div class="series-start"><span>Per començar</span> <a href="/blog/${overview.slug}/">${escapeHtml(overview.seriesLabel || overview.title)} →</a></div>`
+    : '';
+  const body = `<main class="page-blog-index page-series">
+  <h1>${escapeHtml(name)}</h1>
+  ${intro}
+  ${start}
+  <ul>${cards}</ul>
+</main>`;
+  const layout = renderLayout({
+    title: `${name} — ${SITE_NAME}`,
+    description: `Tots els relats de la sèrie «${name}» de ${SITE_NAME}, en ordre de lectura.`,
+    canonical: `${SITE}/serie/${slug}/`,
+    ogImage: ogImageUrl((overview ?? parts[0])?.cover || '/images/hero-home.svg'),
+    bodyClass: 'page-blog-index page-series',
+    activeNav: '/blog',
+    bodyHtml: body,
+  });
+  return layout;
+}
+
 export function renderSitemap(posts: IndexEntry[]): string {
   const urls = ['', 'blog', 'destinacions', 'about'].map((p) => `<url><loc>${SITE}/${p}${p ? '/' : ''}</loc></url>`);
   for (const p of posts) urls.push(`<url><loc>${SITE}/blog/${p.slug}/</loc></url>`);
   for (const c of usedCategories(posts)) urls.push(`<url><loc>${SITE}${categoryPath(c)}</loc></url>`);
+  const seriesNames = [...new Set(posts.filter((p) => p.series).map((p) => seriesSlug(p.series as string)))];
+  for (const sl of seriesNames) urls.push(`<url><loc>${SITE}/serie/${sl}/</loc></url>`);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.join('\n')}

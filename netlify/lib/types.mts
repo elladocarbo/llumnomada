@@ -37,6 +37,12 @@ export interface Post {
   coords?: Coords;
   /** Location text the coordinates were looked up from; absent when they were typed by hand. */
   coordsFrom?: string;
+  /** Name of the series this relat belongs to (e.g. a trip told in several parts). */
+  series?: string;
+  /** 0 = the series' overview post; 1, 2, 3… = its parts, in reading order. */
+  seriesOrder?: number;
+  /** Short name shown in the series list; falls back to the title. */
+  seriesLabel?: string;
   date: string;
   updated: string;
   status: 'draft' | 'published';
