@@ -318,6 +318,14 @@ async function renderEditor(id) {
       <input type="text" id="fCoords" value="${post.coords ? `${post.coords.lat}, ${post.coords.lon}` : ''}" placeholder="Es calculen soles a partir de la ubicació">
       <p class="hint">Deixa-ho buit: en desar, es busca sola la posició de la «Ubicació» (i el país, si el deixes buit). Si no és la que vols, escriu-hi latitud i longitud (p. ex. 53.35, -6.26; es copien amb clic dret al lloc a Google Maps) i no es tocarà.</p>
 
+      <label>Sèrie (opcional)</label>
+      <div class="row" style="flex-wrap:wrap">
+        <input type="text" id="fSeries" value="${escapeHtml(post.series || '')}" placeholder="Nom de la sèrie — p. ex. Irlanda – L’illa Maragda" style="flex:2 1 280px">
+        <input type="number" id="fSeriesOrder" min="0" max="99" value="${post.seriesOrder ?? ''}" placeholder="Part (0 = per començar)" style="flex:1 1 150px">
+        <input type="text" id="fSeriesLabel" value="${escapeHtml(post.seriesLabel || '')}" placeholder="Nom curt a la llista" style="flex:1 1 200px">
+      </div>
+      <p class="hint">Els relats amb el mateix nom de sèrie formen una col·lecció amb quadre de navegació i pàgina pròpia. La part 0 és la presentació (surt a les llistes normals); les parts 1, 2, 3… només es veuen dins de la sèrie.</p>
+
       <label>Fitxa pràctica (opcional; els camps buits no es mostren)</label>
       <div class="row" style="flex-wrap:wrap">
         <input type="text" id="fInfoDays" value="${escapeHtml(post.info?.days || '')}" placeholder="Durada — p. ex. 4 dies" style="flex:1 1 220px">
@@ -450,6 +458,9 @@ async function renderEditor(id) {
       location: document.getElementById('fLocation').value.trim(),
       country: document.getElementById('fCountry').value.trim(),
       coords: document.getElementById('fCoords').value.trim(),
+      series: document.getElementById('fSeries').value.trim(),
+      seriesOrder: document.getElementById('fSeriesOrder').value,
+      seriesLabel: document.getElementById('fSeriesLabel').value.trim(),
       cover: document.getElementById('coverPreview').dataset.url || post.cover || '',
       status,
       scheduledAt: scheduleVal ? new Date(scheduleVal).toISOString() : null,

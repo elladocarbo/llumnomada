@@ -336,6 +336,22 @@ export default async (request: Request, context: Context) => {
     post.coords = coords;
     post.coordsFrom = coordsFrom;
 
+    // Series: undefined keeps the stored value (scripts that re-save without these fields), an
+    // empty value clears it, anything else is validated.
+    const cleanText = (v: unknown, max: number): string | undefined => String(v ?? '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, max) || undefined;
+    post.series = body.series === undefined ? existing?.series : cleanText(body.series, 120);
+    post.seriesLabel = body.seriesLabel === undefined ? existing?.seriesLabel : cleanText(body.seriesLabel, 80);
+    if (body.seriesOrder === undefined) {
+      post.seriesOrder = existing?.seriesOrder;
+    } else {
+      const n = Number(body.seriesOrder);
+      post.seriesOrder = String(body.seriesOrder ?? '').trim() !== '' && Number.isInteger(n) && n >= 0 && n <= 99 ? n : undefined;
+    }
+    if (!post.series) {
+      post.seriesOrder = undefined;
+      post.seriesLabel = undefined;
+    }
+
     const saved = await savePost(post);
     await purgeBlogCache();
     return json(saved);

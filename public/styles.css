@@ -410,6 +410,23 @@ button.stars:focus-visible {
   font-weight: 700;
 }
 
+/* Series: the box inside each part, and the series page */
+.series-box { margin: 0 0 1.8em; padding: 1em 1.2em; border: 1px solid rgba(30, 33, 28, 28%); background: rgba(255, 255, 255, 40%); }
+.series-box .k { font-family: var(--font-mono); font-size: 0.65em; letter-spacing: 0.06em; text-transform: uppercase; color: var(--verde-brezo); }
+.series-box .t { margin: 0.1em 0 0.5em; font-family: var(--font-display); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.9em; }
+.series-box .t a { text-decoration: none; }
+.series-box ol { list-style: none; margin: 0; padding: 0; font-size: 0.85em; }
+.series-box li { display: flex; gap: 0.7em; align-items: baseline; padding: 0.35em 0; border-top: 0.5px solid rgba(30, 33, 28, 15%); }
+.series-box li b { flex: none; width: 1.2em; font-family: var(--font-mono); font-weight: 400; font-size: 0.8em; color: var(--piedra); }
+.series-box li a { text-decoration: none; }
+.series-box li a:hover { text-decoration: underline; }
+.series-box li em { margin-left: auto; flex: none; font-family: var(--font-mono); font-style: normal; font-size: 0.7em; color: var(--verde-brezo); }
+.series-box li.cur { background: rgba(160, 124, 51, 16%); margin: 0 -0.5em; padding-left: 0.5em; padding-right: 0.5em; font-weight: 600; border-top-color: transparent; }
+.page-series .intro { max-width: 640px; margin: -0.6em auto 1.2em; }
+.page-series .series-start { text-align: center; margin: 0 0 2em; font-family: var(--font-mono); font-size: 0.8em; }
+.page-series .series-start span { text-transform: uppercase; letter-spacing: 0.05em; color: var(--verde-brezo); }
+.page-irlanda .series-box .k, .page-irlanda .series-box li b, .page-irlanda .series-box li em { color: #143a24; }
+
 /* Newsletter sign-up box and its small standalone pages */
 .subscribe { margin: 2.5em 0 0; padding: 1.4em 1.5em; border: 1px solid rgba(30, 33, 28, 25%); background: rgba(255, 255, 255, 35%); text-align: center; }
 .subscribe h3 { font-size: 1.25em; }

@@ -2,7 +2,9 @@ import type { Context } from '@netlify/functions';
 import { getStore } from '@netlify/blobs';
 import { listIndex, getPostBySlug } from '../lib/store.mts';
 import { newsletterEnabled } from '../lib/newsletter-config.mts';
-import { isNewsletterPage, renderNewsletterPage, renderPrivacy, renderHome, renderBlogIndex, renderDestinations, renderArticle, renderAbout, render404, renderRss, renderSitemap } from '../lib/html.mts';
+import { isSeriesPart, seriesMembers, seriesSlug } from '../lib/series.mts';
+import type { AdjacentPosts, SeriesBox } from '../lib/html.mts';
+import { renderSeriesPage, isNewsletterPage, renderNewsletterPage, renderPrivacy, renderHome, renderBlogIndex, renderDestinations, renderArticle, renderAbout, render404, renderRss, renderSitemap } from '../lib/html.mts';
 import { withCacheHeaders } from '../lib/cache.mts';
 import { getClientIp } from '../lib/auth.mts';
 import { recordHit } from '../lib/hits.mts';
@@ -35,19 +37,32 @@ export default async (request: Request, context: Context) => {
     recordHit(path, ip, sessionSecret).catch(() => {});
   }
 
+  // Numbered series parts are reached through their series page, so the general lists skip them
+  // (the series' overview post, order 0, is listed like any other relat).
+  const listed = (p: { status: string; series?: string; seriesOrder?: number }) => p.status === 'published' && !isSeriesPart(p);
+
   if (path === '/') {
-    const index = (await listIndex()).filter((p) => p.status === 'published');
+    const index = (await listIndex()).filter(listed);
     return html(renderHome(index));
   }
 
   if (path === '/blog') {
-    const index = (await listIndex()).filter((p) => p.status === 'published');
+    const index = (await listIndex()).filter(listed);
     return html(renderBlogIndex(index));
   }
 
   if (path === '/destinacions') {
-    const index = (await listIndex()).filter((p) => p.status === 'published');
+    const index = (await listIndex()).filter(listed);
     return html(renderDestinations(index));
+  }
+
+  const seriesMatch = path.match(/^\/serie\/([^/]+)$/);
+  if (seriesMatch) {
+    const index = (await listIndex()).filter((p) => p.status === 'published' && p.series);
+    const name = index.find((p) => seriesSlug(p.series as string) === seriesMatch[1])?.series;
+    const members = name ? seriesMembers(index, name) : [];
+    if (!members.length) return html(render404(), 404);
+    return html(renderSeriesPage(members));
   }
 
   const categoryMatch = path.match(/^\/categoria\/([^/]+)$/);
@@ -58,7 +73,7 @@ export default async (request: Request, context: Context) => {
     } catch {
       return html(render404(), 404);
     }
-    const all = (await listIndex()).filter((p) => p.status === 'published');
+    const all = (await listIndex()).filter(listed);
     const posts = all.filter((p) => p.categories?.includes(category));
     if (!posts.length) return html(render404(), 404);
     return html(renderBlogIndex(posts, all, category));
@@ -106,11 +121,30 @@ export default async (request: Request, context: Context) => {
     const ip = getClientIp(request, context);
     const [summary, myVote, index] = await Promise.all([getSummary(post.id), getMyVote(post.id, ip, sessionSecret), listIndex()]);
     // The index is sorted newest-first, so the next-older post sits after this one.
-    const published = index.filter((p) => p.status === 'published' && p.slug);
+    const published = index.filter((p) => p.status === 'published' && p.slug && (!isSeriesPart(p) || p.id === post.id));
     const at = published.findIndex((p) => p.id === post.id);
-    const toLink = (p?: (typeof published)[number]) => (p ? { slug: p.slug as string, title: p.title } : undefined);
-    const adjacent = at === -1 ? undefined : { prev: toLink(published[at + 1]), next: toLink(published[at - 1]) };
-    return html(renderArticle(post, { postId: post.id, summary, myVote }, adjacent, newsletterEnabled()));
+    const toLink = (p?: (typeof published)[number]) => (p ? { slug: p.slug as string, title: p.seriesLabel || p.title } : undefined);
+    let adjacent: AdjacentPosts | undefined = at === -1 ? undefined : { prev: toLink(published[at + 1]), next: toLink(published[at - 1]) };
+
+    // A relat that belongs to a published series gets the series box and follows the series order.
+    let seriesBox: SeriesBox | undefined;
+    if (post.series) {
+      const members = seriesMembers(index, post.series);
+      const i = members.findIndex((m) => m.id === post.id);
+      if (members.length >= 2 && i !== -1) {
+        seriesBox = {
+          name: post.series,
+          items: members.map((m) => ({ slug: m.slug as string, label: m.seriesLabel || m.title, order: m.seriesOrder ?? 0, reading: m.reading, current: m.id === post.id })),
+        };
+        adjacent = {
+          prev: toLink(members[i - 1]),
+          next: toLink(members[i + 1]),
+          prevLabel: '← Part anterior',
+          nextLabel: 'Part següent →',
+        };
+      }
+    }
+    return html(renderArticle(post, { postId: post.id, summary, myVote }, adjacent, newsletterEnabled(), seriesBox));
   }
 
   return html(render404(), 404);
