@@ -51,6 +51,19 @@ async function search(query: string): Promise<GeoResult | null> {
   }
 }
 
+/** Looks up one named place ("Glendalough") for a relat, using its country to disambiguate. Unlike
+ *  geocodeLocation it never falls back to the country alone: a pin in the middle of the country
+ *  would be wrong, so "not found" is returned instead. */
+export async function geocodePlace(name: string, country?: string): Promise<GeoResult | null> {
+  const tries = country?.trim() ? [`${name}, ${country.trim()}`, name] : [name];
+  for (let i = 0; i < tries.length; i++) {
+    if (i > 0) await sleep(1100);
+    const found = await search(tries[i]);
+    if (found) return found;
+  }
+  return null;
+}
+
 /** Looks a place name up on OpenStreetMap (Nominatim). Returns null when nothing is found or the
  *  service is unreachable — callers must treat that as "no automatic position", never as an error. */
 export async function geocodeLocation(location: string, country?: string): Promise<GeoResult | null> {

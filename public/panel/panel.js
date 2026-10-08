@@ -326,6 +326,10 @@ async function renderEditor(id) {
       </div>
       <p class="hint">Els relats amb el mateix nom de sèrie formen una col·lecció amb quadre de navegació i pàgina pròpia. La part 0 és la presentació (surt a les llistes normals); les parts 1, 2, 3… només es veuen dins de la sèrie.</p>
 
+      <label for="fPlaces">Llocs visitats (opcional; un per línia, en ordre de visita)</label>
+      <textarea id="fPlaces" rows="5" placeholder="Dublín&#10;Howth&#10;Glendalough&#10;Kilkenny">${escapeHtml((post.places || []).map((p) => (p.manual ? `${p.name} | ${p.lat}, ${p.lon}` : p.name)).join('\n'))}</textarea>
+      <p class="hint">Dibuixen un mapa amb la ruta a dalt del relat (només si n’hi ha dos o més i no són tots al mateix lloc). La posició es busca sola en desar, fins a 5 llocs per cop. Si un lloc surt mal, escriu-lo així: <em>Nom | latitud, longitud</em>.${(post.places || []).some((p) => p.lat === undefined) ? ` <strong>Encara sense posició: ${escapeHtml((post.places || []).filter((p) => p.lat === undefined).map((p) => p.name).join(', '))}.</strong> Torna a desar per provar-ho de nou.` : ''}</p>
+
       <label>Fitxa pràctica (opcional; els camps buits no es mostren)</label>
       <div class="row" style="flex-wrap:wrap">
         <input type="text" id="fInfoDays" value="${escapeHtml(post.info?.days || '')}" placeholder="Durada — p. ex. 4 dies" style="flex:1 1 220px">
@@ -461,6 +465,7 @@ async function renderEditor(id) {
       series: document.getElementById('fSeries').value.trim(),
       seriesOrder: document.getElementById('fSeriesOrder').value,
       seriesLabel: document.getElementById('fSeriesLabel').value.trim(),
+      placesText: document.getElementById('fPlaces').value,
       cover: document.getElementById('coverPreview').dataset.url || post.cover || '',
       status,
       scheduledAt: scheduleVal ? new Date(scheduleVal).toISOString() : null,

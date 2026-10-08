@@ -31,7 +31,7 @@ export interface MapView {
 
 /** The part of the world to show so that every point fits with some margin: as tight as
  *  possible (never narrower than ~15% of the world), centred on the points, kept inside the map. */
-export function mapView(points: Point[], aspect: number): MapView {
+export function mapView(points: Point[], aspect: number, minWidth = 150): MapView {
   const xs = points.map((p) => p.x);
   const ys = points.map((p) => p.y);
   const minX = Math.min(...xs);
@@ -39,7 +39,7 @@ export function mapView(points: Point[], aspect: number): MapView {
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
 
-  let w = Math.max((maxX - minX) * 1.5, (maxY - minY) * aspect * 1.5, 150);
+  let w = Math.max((maxX - minX) * 1.5, (maxY - minY) * aspect * 1.5, minWidth);
   let h = w / aspect;
   if (w > MAP_W) {
     w = MAP_W;
