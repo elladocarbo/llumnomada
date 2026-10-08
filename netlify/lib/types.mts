@@ -8,6 +8,15 @@ export interface Block {
   alt?: string;
 }
 
+/** A place visited in a relat. `lat`/`lon` are missing while its position hasn't been found yet;
+ *  `manual` means they were typed by hand and must never be overwritten by a lookup. */
+export interface Place {
+  name: string;
+  lat?: number;
+  lon?: number;
+  manual?: boolean;
+}
+
 export interface Coords {
   lat: number;
   lon: number;
@@ -43,6 +52,8 @@ export interface Post {
   seriesOrder?: number;
   /** Short name shown in the series list; falls back to the title. */
   seriesLabel?: string;
+  /** Places visited, in order: drawn as a route on a static map at the top of the relat. */
+  places?: Place[];
   date: string;
   updated: string;
   status: 'draft' | 'published';
@@ -51,7 +62,7 @@ export interface Post {
   info?: PostInfo;
 }
 
-export type IndexEntry = Omit<Post, 'blocks' | 'refs' | 'info'>;
+export type IndexEntry = Omit<Post, 'blocks' | 'refs' | 'info' | 'places'>;
 
 export interface Settings {
   instagram: string;

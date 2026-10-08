@@ -16,8 +16,8 @@ import { renderNewsletterPage, renderPreview } from '../lib/html.mts';
 import { purgeBlogCache, noStoreHeaders } from '../lib/cache.mts';
 import { getStats } from '../lib/hits.mts';
 import { castVote } from '../lib/ratings.mts';
-import { geocodeLocation } from '../lib/geocode.mts';
-import type { Block, Coords, Post, PostInfo, Settings } from '../lib/types.mts';
+import { geocodeLocation, geocodePlace } from '../lib/geocode.mts';
+import type { Block, Coords, Place, Post, PostInfo, Settings } from '../lib/types.mts';
 import { CONTACT_EMAIL, SESSION_TTL_SECONDS } from '../lib/config.mts';
 import { newsletterEnabled } from '../lib/newsletter-config.mts';
 import {
@@ -110,6 +110,70 @@ function sanitizeCoords(v: unknown, current?: Coords): Coords | undefined {
   const lat = Number(m[1]);
   const lon = Number(m[2]);
   return Math.abs(lat) <= 90 && Math.abs(lon) <= 180 ? { lat, lon } : current;
+}
+
+const COORD_PAIR = /^\s*(-?\d+(?:\.\d+)?)\s*[,;]\s*(-?\d+(?:\.\d+)?)\s*$/;
+const MAX_PLACES = 30;
+const MAX_LOOKUPS_PER_SAVE = 5; // each lookup waits ~1s (OpenStreetMap's rate limit): keep a save well under the time limit
+
+function placeName(raw: unknown): string {
+  return String(raw ?? '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 80);
+}
+
+function validCoords(lat: number, lon: number): boolean {
+  return Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
+}
+
+/** Turns the panel's "one place per line" text into places. A line is "Name" (looked up on
+ *  OpenStreetMap, at most MAX_LOOKUPS_PER_SAVE per save; the rest are retried on the next save) or
+ *  "Name | lat, lon" (typed by hand, never overwritten). Positions found earlier are reused. */
+async function resolvePlaces(text: string, existing: Place[] | undefined, country?: string): Promise<Place[] | undefined> {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, MAX_PLACES);
+  if (!lines.length) return undefined;
+  const out: Place[] = [];
+  let lookups = 0;
+  for (const line of lines) {
+    const [rawName, rawCoords] = line.split('|');
+    const name = placeName(rawName);
+    if (!name) continue;
+
+    const typed = rawCoords ? COORD_PAIR.exec(rawCoords) : null;
+    if (typed && validCoords(Number(typed[1]), Number(typed[2]))) {
+      out.push({ name, lat: Number(typed[1]), lon: Number(typed[2]), manual: true });
+      continue;
+    }
+    const known = existing?.find((e) => e.name === name && !e.manual && e.lat !== undefined && e.lon !== undefined);
+    if (known) {
+      out.push({ name, lat: known.lat, lon: known.lon });
+      continue;
+    }
+    if (lookups < MAX_LOOKUPS_PER_SAVE) {
+      if (lookups > 0) await new Promise((r) => setTimeout(r, 1100));
+      lookups++;
+      const geo = await geocodePlace(name, country);
+      if (geo) {
+        out.push({ name, lat: geo.lat, lon: geo.lon });
+        continue;
+      }
+    }
+    out.push({ name });
+  }
+  return out;
+}
+
+/** For scripts that send an already-structured list. */
+function sanitizePlaceList(v: unknown[]): Place[] | undefined {
+  const out: Place[] = [];
+  for (const item of v.slice(0, MAX_PLACES)) {
+    if (!item || typeof item !== 'object') continue;
+    const o = item as Record<string, unknown>;
+    const name = placeName(o.name);
+    if (!name) continue;
+    const lat = Number(o.lat);
+    const lon = Number(o.lon);
+    out.push(validCoords(lat, lon) ? { name, lat, lon, ...(o.manual ? { manual: true } : {}) } : { name });
+  }
+  return out.length ? out : undefined;
 }
 
 function sanitizeStringArray(v: unknown, maxLen = 200): string[] {
@@ -350,6 +414,17 @@ export default async (request: Request, context: Context) => {
     if (!post.series) {
       post.seriesOrder = undefined;
       post.seriesLabel = undefined;
+    }
+
+    // Places visited: the panel sends 'placesText' (lines); scripts may send a 'places' array;
+    // sending neither keeps what is stored.
+    const rawBody = body as Record<string, unknown>;
+    if (rawBody.placesText !== undefined) {
+      post.places = await resolvePlaces(String(rawBody.placesText), existing?.places, post.country);
+    } else if (Array.isArray(rawBody.places)) {
+      post.places = sanitizePlaceList(rawBody.places);
+    } else {
+      post.places = existing?.places;
     }
 
     const saved = await savePost(post);

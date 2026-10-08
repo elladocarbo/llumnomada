@@ -410,6 +410,16 @@ button.stars:focus-visible {
   font-weight: 700;
 }
 
+/* Route map at the top of a relat: static, numbered pins joined by a dashed line */
+.route-map-wrap { margin: 0 0 1.8em; }
+.route-map { position: relative; width: 100%; aspect-ratio: var(--ar, 1.8); background: #c7d5e6; border: 1px solid rgba(138, 134, 119, 55%); overflow: hidden; }
+.route-map .route-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.route-pin { position: absolute; transform: translate(-50%, -50%); width: 22px; height: 22px; border-radius: 50%; background: var(--oro-viejo); color: #fff; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(30, 33, 28, 45%); font-family: var(--font-mono); font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; }
+.route-list { columns: 2; column-gap: 1.6em; margin: 0.9em 0 0; padding-left: 1.6em; font-family: var(--font-mono); font-size: 0.72em; line-height: 1.6; }
+.route-map-wrap figcaption { margin-top: 0.5em; font-family: var(--font-mono); font-size: 0.65em; color: var(--piedra); }
+.page-irlanda .route-map-wrap figcaption { color: #143a24; }
+@media (max-width: 480px) { .route-list { columns: 1; } }
+
 /* Series: the box inside each part, and the series page */
 .series-box { margin: 0 0 1.8em; padding: 1em 1.2em; border: 1px solid rgba(30, 33, 28, 28%); background: rgba(255, 255, 255, 40%); }
 .series-box .k { font-family: var(--font-mono); font-size: 0.65em; letter-spacing: 0.06em; text-transform: uppercase; color: var(--verde-brezo); }
