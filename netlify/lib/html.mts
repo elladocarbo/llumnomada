@@ -204,7 +204,8 @@ function infoHtml(info?: PostInfo): string {
   return `<aside class="trip-info" aria-label="Fitxa pràctica"><h2>Fitxa pràctica</h2><dl>${rows.join('')}</dl></aside>`;
 }
 
-const ROUTE_ASPECT = 1.8;
+const ROUTE_MAX_ASPECT = 1.8;
+const ROUTE_MIN_ASPECT = 1.25;
 
 /** Static route map at the top of a relat: the places visited as numbered pins joined, in order, by
  *  a dashed line. Hidden when fewer than two places have a position, or when they are so close
@@ -217,14 +218,19 @@ function routeMapHtml(places?: Place[]): string {
   const ys = pts.map((p) => p.y);
   if (Math.max(...xs) - Math.min(...xs) + (Math.max(...ys) - Math.min(...ys)) < 1.0) return '';
 
-  const v = mapView(pts, ROUTE_ASPECT, 12);
+  // Wide trips get a wide map; tall ones (a country from north to south) a squarer one, so the pins
+  // stay apart on a phone.
+  const spanX = Math.max(...xs) - Math.min(...xs);
+  const spanY = Math.max(...ys) - Math.min(...ys);
+  const aspect = Math.min(ROUTE_MAX_ASPECT, Math.max(ROUTE_MIN_ASPECT, spanX / Math.max(spanY, 0.001)));
+  const v = mapView(pts, aspect, 12);
   const line = pts.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
   const art = `<svg class="route-art" viewBox="${v.x.toFixed(2)} ${v.y.toFixed(2)} ${v.w.toFixed(2)} ${v.h.toFixed(2)}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><image href="/mapa-mon.svg" x="0" y="0" width="${MAP_W}" height="${MAP_H}"/><polyline points="${line}" fill="none" stroke="#a07c33" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
   const pins = pts
     .map((p, i) => `<span class="route-pin" style="left:${(((p.x - v.x) / v.w) * 100).toFixed(2)}%;top:${(((p.y - v.y) / v.h) * 100).toFixed(2)}%" aria-hidden="true">${i + 1}</span>`)
     .join('');
   const items = located.map((p) => `<li>${escapeHtml(p.name)}</li>`).join('');
-  return `<figure class="route-map-wrap"><div class="route-map" role="img" aria-label="Mapa de la ruta, amb els llocs visitats numerats en ordre" style="--ar:${ROUTE_ASPECT}">${art}${pins}</div><ol class="route-list">${items}</ol><figcaption>La línia uneix els llocs en ordre de visita; no és el recorregut exacte.</figcaption></figure>`;
+  return `<figure class="route-map-wrap"><div class="route-map" role="img" aria-label="Mapa de la ruta, amb els llocs visitats numerats en ordre" style="--ar:${aspect.toFixed(2)}">${art}${pins}</div><ol class="route-list">${items}</ol><figcaption>La línia uneix els llocs en ordre de visita; no és el recorregut exacte.</figcaption></figure>`;
 }
 
 function seriesBoxHtml(series?: SeriesBox): string {
@@ -309,8 +315,8 @@ function renderArticleBody(a: ArticleLike, rating?: RatingProps, extras: Article
     </div>
     <hr>
     <p>${a.lead}</p>
-    ${seriesBoxHtml(extras.series)}
     ${routeMapHtml(extras.places)}
+    ${seriesBoxHtml(extras.series)}
     ${infoHtml(extras.info)}
     ${extras.toc ? renderToc(a.blocks) : ''}
     ${renderBlocks(a.blocks)}
