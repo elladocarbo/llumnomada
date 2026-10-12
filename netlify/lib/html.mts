@@ -6,8 +6,10 @@ import { ABOUT_BLOCKS, ABOUT_COVER, ABOUT_DESCRIPTION, ABOUT_LEAD, ABOUT_SUMMARY
 import { RATING_LEGEND, type RatingSummary } from './ratings.mts';
 import { imageSrcset, imageUrl } from './images.mts';
 import { MAP_H, MAP_W, mapView, projectLatLon } from './worldmap.mts';
+import { cityHeight, cityMapFor, projectCity } from './citymap.mts';
 import { newsletterEnabled } from './newsletter-config.mts';
 import { seriesSlug } from './series.mts';
+import { slugify } from './slug.mts';
 
 // Responsive WebP copies of an uploaded cover image (see images.mts); static SVGs pass through.
 function coverImg(cover: string, widths: number[], sizes: string, extra = ''): string {
@@ -207,30 +209,67 @@ function infoHtml(info?: PostInfo): string {
 const ROUTE_MAX_ASPECT = 1.8;
 const ROUTE_MIN_ASPECT = 1.25;
 
+/** Pushes points apart, in place, until none is closer than `minSep` to another. */
+function spreadPins(pts: { x: number; y: number }[], minSep: number): void {
+  for (let round = 0; round < 40; round++) {
+    let moved = false;
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        let dx = pts[j].x - pts[i].x;
+        let dy = pts[j].y - pts[i].y;
+        let d = Math.hypot(dx, dy);
+        if (d >= minSep) continue;
+        if (d < 1e-6) {
+          dx = 1;
+          dy = 0;
+          d = 1;
+        }
+        const push = (minSep - d) / 2 + 0.01;
+        pts[i].x -= (dx / d) * push;
+        pts[i].y -= (dy / d) * push;
+        pts[j].x += (dx / d) * push;
+        pts[j].y += (dy / d) * push;
+        moved = true;
+      }
+    }
+    if (!moved) return;
+  }
+}
+
 /** Static route map at the top of a relat: the places visited as numbered pins joined, in order, by
- *  a dashed line. Hidden when fewer than two places have a position, or when they are so close
- *  together that the pins couldn't be told apart at this scale (a single city, say). */
+ *  a dashed line. When every place is inside a city we have a street map of (see citymap.mts) that
+ *  map is used, zoomed on the route; otherwise the world map. Hidden when fewer than two places have
+ *  a position, or when they are so close together that the pins couldn't be told apart at this
+ *  scale (a single city on the world map, say). */
 function routeMapHtml(places?: Place[]): string {
   const located = (places ?? []).filter((p): p is Place & { lat: number; lon: number } => typeof p.lat === 'number' && typeof p.lon === 'number');
   if (located.length < 2) return '';
-  const pts = located.map((p) => projectLatLon(p.lat, p.lon));
+  const city = cityMapFor(located);
+  const pts = located.map((p) => (city ? projectCity(city, p.lat, p.lon) : projectLatLon(p.lat, p.lon)));
   const xs = pts.map((p) => p.x);
   const ys = pts.map((p) => p.y);
-  if (Math.max(...xs) - Math.min(...xs) + (Math.max(...ys) - Math.min(...ys)) < 1.0) return '';
+  const spanX = Math.max(...xs) - Math.min(...xs);
+  const spanY = Math.max(...ys) - Math.min(...ys);
+  if (spanX + spanY < (city ? 20 : 1.0)) return '';
 
   // Wide trips get a wide map; tall ones (a country from north to south) a squarer one, so the pins
   // stay apart on a phone.
-  const spanX = Math.max(...xs) - Math.min(...xs);
-  const spanY = Math.max(...ys) - Math.min(...ys);
   const aspect = Math.min(ROUTE_MAX_ASPECT, Math.max(ROUTE_MIN_ASPECT, spanX / Math.max(spanY, 0.001)));
-  const v = mapView(pts, aspect, 12);
+  const mapW = city ? city.w : MAP_W;
+  const mapH = city ? cityHeight(city) : MAP_H;
+  const v = mapView(pts, aspect, city ? 120 : 12, mapW, mapH);
+  // On a city map, places a few hundred metres apart would pile up on a phone: nudge them apart,
+  // assuming the map is drawn about 300 px wide, so every number stays legible (the shift is tiny
+  // compared with the area shown).
+  if (city) spreadPins(pts, (19 * v.w) / 300);
   const line = pts.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
-  const art = `<svg class="route-art" viewBox="${v.x.toFixed(2)} ${v.y.toFixed(2)} ${v.w.toFixed(2)} ${v.h.toFixed(2)}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><image href="/mapa-mon.svg" x="0" y="0" width="${MAP_W}" height="${MAP_H}"/><polyline points="${line}" fill="none" stroke="#a07c33" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
+  const art = `<svg class="route-art" viewBox="${v.x.toFixed(2)} ${v.y.toFixed(2)} ${v.w.toFixed(2)} ${v.h.toFixed(2)}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><image href="${city ? city.file : '/mapa-mon.svg'}" x="0" y="0" width="${mapW}" height="${mapH}"/><polyline points="${line}" fill="none" stroke="#a07c33" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
   const pins = pts
     .map((p, i) => `<span class="route-pin" style="left:${(((p.x - v.x) / v.w) * 100).toFixed(2)}%;top:${(((p.y - v.y) / v.h) * 100).toFixed(2)}%" aria-hidden="true">${i + 1}</span>`)
     .join('');
   const items = located.map((p) => `<li>${escapeHtml(p.name)}</li>`).join('');
-  return `<figure class="route-map-wrap"><div class="route-map" role="img" aria-label="Mapa de la ruta, amb els llocs visitats numerats en ordre" style="--ar:${aspect.toFixed(2)}">${art}${pins}</div><ol class="route-list">${items}</ol><figcaption>La línia uneix els llocs en ordre de visita; no és el recorregut exacte.</figcaption></figure>`;
+  const note = 'La línia uneix els llocs en ordre de visita; no és el recorregut exacte.' + (city ? ` ${city.credit}.` : '');
+  return `<figure class="route-map-wrap"><div class="route-map${city ? ' route-map-city' : ''}" role="img" aria-label="Mapa de la ruta, amb els llocs visitats numerats en ordre" style="--ar:${aspect.toFixed(2)}">${art}${pins}</div><ol class="route-list">${items}</ol><figcaption>${note}</figcaption></figure>`;
 }
 
 function seriesBoxHtml(series?: SeriesBox): string {
@@ -337,6 +376,7 @@ const ARTICLE_THEME_BY_SLUG: Record<string, string> = {
   'copenhagen-la-ciutat-de-les-mil-punxes': 'page-copenhagen',
   'motxilla-viatjar-lleuger': 'page-motxilla',
   'irlanda-l-illa-maragda': 'page-irlanda',
+  'berlin-l-atenes-de-l-spree': 'page-berlin',
 };
 
 // The same treatment applies to every part of a series, keyed by the series' slug.
@@ -398,14 +438,16 @@ export function renderArticle(post: Post, rating?: RatingProps, adjacent?: Adjac
 
 /** Renders a not-yet-saved/published post for the panel's "vista prèvia" — noindex, no JSON-LD,
  *  no dependency on a real slug (drafts don't have one yet). */
-export function renderPreview(post: Pick<Post, 'title' | 'lead' | 'blocks' | 'cover' | 'categories' | 'location' | 'date' | 'updated' | 'refs' | 'info'>): string {
+export function renderPreview(post: Pick<Post, 'title' | 'lead' | 'blocks' | 'cover' | 'categories' | 'location' | 'date' | 'updated' | 'refs' | 'info'> & Partial<Pick<Post, 'places' | 'series'>>): string {
+  // Same visual treatment as the published page (the slug it would get, or its series).
+  const theme = ARTICLE_THEME_BY_SLUG[slugify(post.title)] ?? (post.series ? SERIES_THEME[seriesSlug(post.series)] : undefined);
   const layout = renderLayout({
     title: `${post.title || '(Sense títol)'} — ${SITE_NAME}`,
     description: (post.lead || '').replace(/<[^>]+>/g, '').slice(0, 200),
     canonical: `${SITE}/`,
     ogImage: ogImageUrl(post.cover || '/images/hero-home.svg'),
-    bodyClass: 'page-article page-preview',
-    bodyHtml: renderArticleBody(post, undefined, { toc: true, info: post.info }),
+    bodyClass: theme ? `page-article page-preview ${theme}` : 'page-article page-preview',
+    bodyHtml: renderArticleBody(post, undefined, { toc: true, info: post.info, places: post.places }),
   });
   return layout.replace('<head>', '<head>\n<meta name="robots" content="noindex,nofollow">');
 }
