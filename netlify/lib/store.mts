@@ -3,6 +3,7 @@ import type { IndexEntry, Post, Settings } from './types.mts';
 import { SEED_POSTS } from '../seed/posts.mts';
 import { SEED_SETTINGS } from '../seed/settings.mts';
 import { calcReadingMinutes } from './blocks.mts';
+import { slugify } from './slug.mts';
 
 // 'strong' consistency bypasses Netlify Blobs' own (eventual, edge-cached) read path — the
 // default silently serves stale data for an unbounded time after a write, independent of and
@@ -72,16 +73,6 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   const entry = index.find((p) => p.slug === slug);
   if (!entry) return null;
   return getPost(entry.id);
-}
-
-function slugify(title: string): string {
-  return title
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '') // strip diacritics (à→a, ò→o, ü→u...)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
 }
 
 async function uniqueSlug(base: string): Promise<string> {

@@ -12,6 +12,7 @@
   --blau-mari-clar: #c7d5e6;
   --crema-suau: #f6efdf;
   --verd-maragda: #5ac98a;
+  --rosa-suau: #f9e9ec;
 
   --font-display: 'Cinzel', 'Times New Roman', serif;
   --font-body: 'EB Garamond', Georgia, serif;
@@ -115,18 +116,26 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
   border-image-repeat: round;
 }
 
-.page-irlanda .prose-image { width: 80%; }
+.page-irlanda .prose-image,
+.page-berlin .prose-image { width: 80%; }
 /* The photo runs to its edge; the frame is an overlay (a pseudo-element on the link, since an <img>
-   can't have one) that fades out towards the inside via a mask — one gradient per side. */
-.page-irlanda .prose-image-link { position: relative; --w: 24px; --solid: 50%; }
-.page-irlanda .prose-image img { border-width: 0; }
-.page-irlanda .prose-image-link::after {
+   can't have one) that fades out towards the inside via a mask — one gradient per side.
+   Each article names its own frame image in --frame. */
+.page-irlanda { --frame: url("/frame-celtic.png") 114 round; }
+.page-berlin { --frame: url("/frame-berlin.png") 120 round; }
+.page-irlanda .prose-image-link,
+.page-berlin .prose-image-link { position: relative; --w: 24px; --solid: 50%; }
+.page-berlin .prose-image-link { --w: 40px; --solid: 45%; }
+.page-irlanda .prose-image img,
+.page-berlin .prose-image img { border-width: 0; }
+.page-irlanda .prose-image-link::after,
+.page-berlin .prose-image-link::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
   border: var(--w) solid transparent;
-  border-image: url("/frame-celtic.png") 114 round;
+  border-image: var(--frame);
   -webkit-mask-image:
     linear-gradient(to right, #000 0, #000 var(--solid), transparent 100%),
     linear-gradient(to left, #000 0, #000 var(--solid), transparent 100%),
@@ -360,10 +369,12 @@ button.stars:focus-visible {
 @media (max-width: 720px) {
   .page-roma .prose-image,
   .page-copenhagen .prose-image,
-  .page-irlanda .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
+  .page-irlanda .prose-image,
+  .page-berlin .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
   .page-roma .prose-image img,
   .page-copenhagen .prose-image img { border-width: 9px; }
   .page-irlanda .prose-image-link { --w: 17px; }
+  .page-berlin .prose-image-link { --w: 28px; }
 }
 
 /* "ROMA: la Città Eterna" — darker parchment behind the reading column, to suit its photos */
@@ -386,6 +397,10 @@ button.stars:focus-visible {
 .page-irlanda .prose a { color: var(--tinta); }
 .page-irlanda .rating-table .stars { color: #7a5416; }
 .page-irlanda .rating-thanks { color: #143a24; }
+
+/* "Berlín: l'Atenes de l'Spree" — very soft pink reading column; the dark ornamental frame around
+   each photo (frame-berlin.png) fades out towards the picture, as in the Irish relat. */
+.page-berlin .prose { background: var(--rosa-suau); box-shadow: 0 0 40px rgba(90, 40, 55, 8%) inset; }
 
 /* "Com faig la motxilla per viatjar lleuger" — soft cream page + handwritten-look body text,
    like notes jotted in a travel notebook. Title stays in the site's display font on purpose. */
@@ -414,6 +429,8 @@ button.stars:focus-visible {
 .route-map-wrap { margin: 0 0 1.8em; }
 .route-map { position: relative; width: 100%; aspect-ratio: var(--ar, 1.8); background: #c7d5e6; border: 1px solid rgba(138, 134, 119, 55%); overflow: hidden; }
 .route-map .route-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.route-map-city { background: #f6ece8; }
+.route-map-city .route-pin { width: 18px; height: 18px; line-height: 14px; font-size: 9.5px; }
 .route-pin { position: absolute; transform: translate(-50%, -50%); width: 20px; height: 20px; border-radius: 50%; background: var(--oro-viejo); color: #fff; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(30, 33, 28, 45%); font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; line-height: 16px; text-align: center; }
 .route-list { columns: 2; column-gap: 1.6em; margin: 0.9em 0 0; padding-left: 1.6em; font-family: var(--font-mono); font-size: 0.72em; line-height: 1.6; }
 .route-map-wrap figcaption { margin-top: 0.5em; font-family: var(--font-mono); font-size: 0.65em; color: var(--piedra); }

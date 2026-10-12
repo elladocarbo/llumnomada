@@ -127,7 +127,7 @@ function validCoords(lat: number, lon: number): boolean {
 /** Turns the panel's "one place per line" text into places. A line is "Name" (looked up on
  *  OpenStreetMap, at most MAX_LOOKUPS_PER_SAVE per save; the rest are retried on the next save) or
  *  "Name | lat, lon" (typed by hand, never overwritten). Positions found earlier are reused. */
-async function resolvePlaces(text: string, existing: Place[] | undefined, country?: string): Promise<Place[] | undefined> {
+async function resolvePlaces(text: string, existing: Place[] | undefined, country?: string, maxLookups = MAX_LOOKUPS_PER_SAVE): Promise<Place[] | undefined> {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, MAX_PLACES);
   if (!lines.length) return undefined;
   const out: Place[] = [];
@@ -147,7 +147,7 @@ async function resolvePlaces(text: string, existing: Place[] | undefined, countr
       out.push({ name, lat: known.lat, lon: known.lon });
       continue;
     }
-    if (lookups < MAX_LOOKUPS_PER_SAVE) {
+    if (lookups < maxLookups) {
       if (lookups > 0) await new Promise((r) => setTimeout(r, 1100));
       lookups++;
       const geo = await geocodePlace(name, country);
@@ -447,6 +447,11 @@ export default async (request: Request, context: Context) => {
 
   if (path === '/preview' && method === 'POST') {
     const body = (await request.json()) as Partial<Post>;
+    // Places as typed in the panel: lines with coordinates, or names already located on the saved
+    // post, are drawn on the map; new names would need a lookup, which only saving does.
+    const previewPlaces = (body as Record<string, unknown>).placesText !== undefined
+      ? await resolvePlaces(String((body as Record<string, unknown>).placesText), body.id ? (await getPost(String(body.id)))?.places : undefined, undefined, 0)
+      : undefined;
     const html = renderPreview({
       title: String(body.title ?? ''),
       lead: sanitizeRichText(String(body.lead ?? '')),
@@ -458,6 +463,8 @@ export default async (request: Request, context: Context) => {
       updated: new Date().toISOString(),
       refs: sanitizeStringArray(body.refs, 500),
       info: sanitizeInfo(body.info),
+      places: previewPlaces,
+      series: body.series ? String(body.series).replace(/[<>]/g, '').slice(0, 120) : undefined,
     });
     return new Response(html, { headers: noStoreHeaders({ 'content-type': 'text/html; charset=utf-8' }) });
   }
