@@ -13,6 +13,7 @@
   --crema-suau: #f6efdf;
   --verd-maragda: #5ac98a;
   --rosa-suau: #f9e9ec;
+  --borgonya-suau: #cb92a0;
 
   --font-display: 'Cinzel', 'Times New Roman', serif;
   --font-body: 'EB Garamond', Georgia, serif;
@@ -117,19 +118,25 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
 }
 
 .page-irlanda .prose-image,
-.page-berlin .prose-image { width: 80%; }
+.page-berlin .prose-image,
+.page-dresden .prose-image { width: 80%; }
 /* The photo runs to its edge; the frame is an overlay (a pseudo-element on the link, since an <img>
    can't have one) that fades out towards the inside via a mask — one gradient per side.
    Each article names its own frame image in --frame. */
 .page-irlanda { --frame: url("/frame-celtic.png") 114 round; }
 .page-berlin { --frame: url("/frame-berlin.png") 120 round; }
+.page-dresden { --frame: url("/frame-dresden.png") 120 round; }
 .page-irlanda .prose-image-link,
-.page-berlin .prose-image-link { position: relative; --w: 24px; --solid: 50%; }
+.page-berlin .prose-image-link,
+.page-dresden .prose-image-link { position: relative; --w: 24px; --solid: 50%; }
 .page-berlin .prose-image-link { --w: 40px; --solid: 45%; }
+.page-dresden .prose-image-link { --w: 34px; --solid: 55%; }
 .page-irlanda .prose-image img,
-.page-berlin .prose-image img { border-width: 0; }
+.page-berlin .prose-image img,
+.page-dresden .prose-image img { border-width: 0; }
 .page-irlanda .prose-image-link::after,
-.page-berlin .prose-image-link::after {
+.page-berlin .prose-image-link::after,
+.page-dresden .prose-image-link::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -370,11 +377,13 @@ button.stars:focus-visible {
   .page-roma .prose-image,
   .page-copenhagen .prose-image,
   .page-irlanda .prose-image,
-  .page-berlin .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
+  .page-berlin .prose-image,
+  .page-dresden .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
   .page-roma .prose-image img,
   .page-copenhagen .prose-image img { border-width: 9px; }
   .page-irlanda .prose-image-link { --w: 17px; }
   .page-berlin .prose-image-link { --w: 28px; }
+  .page-dresden .prose-image-link { --w: 24px; }
 }
 
 /* "ROMA: la Città Eterna" — darker parchment behind the reading column, to suit its photos */
@@ -401,6 +410,22 @@ button.stars:focus-visible {
 /* "Berlín: l'Atenes de l'Spree" — very soft pink reading column; the dark ornamental frame around
    each photo (frame-berlin.png) fades out towards the picture, as in the Irish relat. */
 .page-berlin .prose { background: var(--rosa-suau); box-shadow: 0 0 40px rgba(90, 40, 55, 8%) inset; }
+
+/* "Dresden: la Florència de l'Elba" — soft burgundy reading column, with a simple gilded baroque frame
+   (frame-dresden.png) that fades out towards each photo. Small print is darkened to stay legible. */
+.page-dresden .prose { background: var(--borgonya-suau); box-shadow: 0 0 40px rgba(70, 10, 30, 14%) inset; }
+.page-dresden .trip-info dt,
+.page-dresden .toc summary span,
+.page-dresden .post-nav a span,
+.page-dresden .route-map-wrap figcaption { color: #4a1626; }
+.page-dresden .prose .meta,
+.page-dresden .prose .meta *,
+.page-dresden .refs,
+.page-dresden .rating-table,
+.page-dresden .rating-result,
+.page-dresden .prose a { color: var(--tinta); }
+.page-dresden .rating-table .stars { color: #6e2236; }
+.page-dresden .rating-thanks { color: #4a1626; }
 
 /* "Com faig la motxilla per viatjar lleuger" — soft cream page + handwritten-look body text,
    like notes jotted in a travel notebook. Title stays in the site's display font on purpose. */
