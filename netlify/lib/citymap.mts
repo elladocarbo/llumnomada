@@ -21,7 +21,10 @@ const OSM_CREDIT = 'Mapa: © col·laboradors d’OpenStreetMap';
 // public/mapa-berlin.svg is generated with exactly these numbers (water, parks and main roads from OpenStreetMap).
 const BERLIN: CityMap = { id: 'berlin', file: '/mapa-berlin.svg', west: 13.3, east: 13.5, south: 52.46, north: 52.57, lat0: 52.52, w: 1000, credit: OSM_CREDIT };
 
-export const CITY_MAPS: CityMap[] = [BERLIN];
+// public/mapa-dresden.svg: same recipe, plus building outlines, for the walk around the old town.
+const DRESDEN: CityMap = { id: 'dresden', file: '/mapa-dresden.svg', west: 13.722, east: 13.758, south: 51.044, north: 51.062, lat0: 51.053, w: 1000, credit: OSM_CREDIT };
+
+export const CITY_MAPS: CityMap[] = [BERLIN, DRESDEN];
 
 /** Height of the drawing, in the same units as its width. */
 export function cityHeight(c: CityMap): number {

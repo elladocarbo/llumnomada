@@ -377,6 +377,7 @@ const ARTICLE_THEME_BY_SLUG: Record<string, string> = {
   'motxilla-viatjar-lleuger': 'page-motxilla',
   'irlanda-l-illa-maragda': 'page-irlanda',
   'berlin-l-atenes-de-l-spree': 'page-berlin',
+  'dresden-la-florencia-de-l-elba': 'page-dresden',
 };
 
 // The same treatment applies to every part of a series, keyed by the series' slug.
