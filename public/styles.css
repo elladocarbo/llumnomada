@@ -14,6 +14,7 @@
   --verd-maragda: #5ac98a;
   --rosa-suau: #f9e9ec;
   --borgonya-suau: #cb92a0;
+  --groc-sorra: #ecd68f;
 
   --font-display: 'Cinzel', 'Times New Roman', serif;
   --font-body: 'EB Garamond', Georgia, serif;
@@ -109,27 +110,32 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
 .page-copenhagen .prose-image,
 .page-irlanda .prose-image,
 .page-berlin .prose-image,
-.page-dresden .prose-image { width: 80%; }
+.page-dresden .prose-image,
+.page-marroc .prose-image { width: 80%; }
 .page-roma { --frame: url("/frame-roma.png") 128 round; }
 .page-copenhagen { --frame: url("/frame-copenhagen.png") 128 round; }
 .page-irlanda { --frame: url("/frame-celtic.png") 128 round; }
 .page-berlin { --frame: url("/frame-berlin.png") 128 round; }
 .page-dresden { --frame: url("/frame-dresden.png") 128 round; }
+.page-marroc { --frame: url("/frame-marroc.png") 128 round; }
 .page-roma .prose-image-link,
 .page-copenhagen .prose-image-link,
 .page-irlanda .prose-image-link,
 .page-berlin .prose-image-link,
-.page-dresden .prose-image-link { position: relative; --w: 20px; --solid: 45%; }
+.page-dresden .prose-image-link,
+.page-marroc .prose-image-link { position: relative; --w: 20px; --solid: 45%; }
 .page-roma .prose-image img,
 .page-copenhagen .prose-image img,
 .page-irlanda .prose-image img,
 .page-berlin .prose-image img,
-.page-dresden .prose-image img { border-width: 0; }
+.page-dresden .prose-image img,
+.page-marroc .prose-image img { border-width: 0; }
 .page-roma .prose-image-link::after,
 .page-copenhagen .prose-image-link::after,
 .page-irlanda .prose-image-link::after,
 .page-berlin .prose-image-link::after,
-.page-dresden .prose-image-link::after {
+.page-dresden .prose-image-link::after,
+.page-marroc .prose-image-link::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -371,12 +377,14 @@ button.stars:focus-visible {
   .page-copenhagen .prose-image,
   .page-irlanda .prose-image,
   .page-berlin .prose-image,
-  .page-dresden .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
+  .page-dresden .prose-image,
+  .page-marroc .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
   .page-roma .prose-image-link,
   .page-copenhagen .prose-image-link,
   .page-irlanda .prose-image-link,
   .page-berlin .prose-image-link,
-  .page-dresden .prose-image-link { --w: 15px; }
+  .page-dresden .prose-image-link,
+  .page-marroc .prose-image-link { --w: 15px; }
 }
 
 /* "ROMA: la Città Eterna" — darker parchment behind the reading column, to suit its photos */
@@ -419,6 +427,22 @@ button.stars:focus-visible {
 .page-dresden .prose a { color: var(--tinta); }
 .page-dresden .rating-table .stars { color: #6e2236; }
 .page-dresden .rating-thanks { color: #4a1626; }
+
+/* "Marraquèix i Merzouga" — desert-sand yellow reading column; the frame (frame-marroc.png) is made of
+   zellige-style eight-pointed stars. Small print is darkened to stay legible on the yellow. */
+.page-marroc .prose { background: var(--groc-sorra); box-shadow: 0 0 40px rgba(110, 70, 10, 14%) inset; }
+.page-marroc .trip-info dt,
+.page-marroc .toc summary span,
+.page-marroc .post-nav a span,
+.page-marroc .route-map-wrap figcaption { color: #5a3510; }
+.page-marroc .prose .meta,
+.page-marroc .prose .meta *,
+.page-marroc .refs,
+.page-marroc .rating-table,
+.page-marroc .rating-result,
+.page-marroc .prose a { color: var(--tinta); }
+.page-marroc .rating-table .stars { color: #8a4a16; }
+.page-marroc .rating-thanks { color: #5a3510; }
 
 /* "Com faig la motxilla per viatjar lleuger" — soft cream page + handwritten-look body text,
    like notes jotted in a travel notebook. Title stays in the site's display font on purpose. */

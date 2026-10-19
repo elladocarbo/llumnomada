@@ -24,7 +24,11 @@ const BERLIN: CityMap = { id: 'berlin', file: '/mapa-berlin.svg', west: 13.3, ea
 // public/mapa-dresden.svg: same recipe, plus building outlines, for the walk around the old town.
 const DRESDEN: CityMap = { id: 'dresden', file: '/mapa-dresden.svg', west: 13.722, east: 13.758, south: 51.044, north: 51.062, lat0: 51.053, w: 1000, credit: OSM_CREDIT };
 
-export const CITY_MAPS: CityMap[] = [BERLIN, DRESDEN];
+// public/mapa-marroc.svg: the north of Morocco, for a route from Marràqueix to the desert and Fes
+// (country outlines from Natural Earth, public domain; a soft shading hints at the Atlas).
+const MARROC: CityMap = { id: 'marroc', file: '/mapa-marroc.svg', west: -10.4, east: -1.6, south: 28.9, north: 36.2, lat0: 32.5, w: 1000, credit: 'Mapa: Natural Earth (domini públic)' };
+
+export const CITY_MAPS: CityMap[] = [BERLIN, DRESDEN, MARROC];
 
 /** Height of the drawing, in the same units as its width. */
 export function cityHeight(c: CityMap): number {
