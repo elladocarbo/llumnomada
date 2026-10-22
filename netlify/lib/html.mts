@@ -379,6 +379,7 @@ const ARTICLE_THEME_BY_SLUG: Record<string, string> = {
   'berlin-l-atenes-de-l-spree': 'page-berlin',
   'dresden-la-florencia-de-l-elba': 'page-dresden',
   'marraqueix-i-merzouga-dormir-sota-els-estels': 'page-marroc',
+  'la-ruta-del-tren-petit-un-petit-tast-celestial-del-baix-emporda': 'page-emporda',
 };
 
 // The same treatment applies to every part of a series, keyed by the series' slug.
