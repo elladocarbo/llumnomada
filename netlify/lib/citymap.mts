@@ -28,7 +28,10 @@ const DRESDEN: CityMap = { id: 'dresden', file: '/mapa-dresden.svg', west: 13.72
 // (country outlines from Natural Earth, public domain; a soft shading hints at the Atlas).
 const MARROC: CityMap = { id: 'marroc', file: '/mapa-marroc.svg', west: -10.4, east: -1.6, south: 28.9, north: 36.2, lat0: 32.5, w: 1000, credit: 'Mapa: Natural Earth (domini públic)' };
 
-export const CITY_MAPS: CityMap[] = [BERLIN, DRESDEN, MARROC];
+// public/mapa-emporda.svg: the coast and plain between Mont-ras and Palamós (Baix Empordà), from OpenStreetMap.
+const EMPORDA: CityMap = { id: 'emporda', file: '/mapa-emporda.svg', west: 3.09, east: 3.2, south: 41.845, north: 41.925, lat0: 41.885, w: 1000, credit: OSM_CREDIT };
+
+export const CITY_MAPS: CityMap[] = [BERLIN, DRESDEN, MARROC, EMPORDA];
 
 /** Height of the drawing, in the same units as its width. */
 export function cityHeight(c: CityMap): number {

@@ -15,6 +15,7 @@
   --rosa-suau: #f9e9ec;
   --borgonya-suau: #cb92a0;
   --groc-sorra: #ecd68f;
+  --lavanda-suau: #ddd0ee;
 
   --font-display: 'Cinzel', 'Times New Roman', serif;
   --font-body: 'EB Garamond', Georgia, serif;
@@ -111,31 +112,36 @@ blockquote { border-left: 2px solid var(--oro-viejo); padding: 0 0 0 20px; margi
 .page-irlanda .prose-image,
 .page-berlin .prose-image,
 .page-dresden .prose-image,
-.page-marroc .prose-image { width: 80%; }
+.page-marroc .prose-image,
+.page-emporda .prose-image { width: 80%; }
 .page-roma { --frame: url("/frame-roma.png") 128 round; }
 .page-copenhagen { --frame: url("/frame-copenhagen.png") 128 round; }
 .page-irlanda { --frame: url("/frame-celtic.png") 128 round; }
 .page-berlin { --frame: url("/frame-berlin.png") 128 round; }
 .page-dresden { --frame: url("/frame-dresden.png") 128 round; }
 .page-marroc { --frame: url("/frame-marroc.png") 128 round; }
+.page-emporda { --frame: url("/frame-emporda.png") 128 round; }
 .page-roma .prose-image-link,
 .page-copenhagen .prose-image-link,
 .page-irlanda .prose-image-link,
 .page-berlin .prose-image-link,
 .page-dresden .prose-image-link,
-.page-marroc .prose-image-link { position: relative; --w: 20px; --solid: 45%; }
+.page-marroc .prose-image-link,
+.page-emporda .prose-image-link { position: relative; --w: 20px; --solid: 45%; }
 .page-roma .prose-image img,
 .page-copenhagen .prose-image img,
 .page-irlanda .prose-image img,
 .page-berlin .prose-image img,
 .page-dresden .prose-image img,
-.page-marroc .prose-image img { border-width: 0; }
+.page-marroc .prose-image img,
+.page-emporda .prose-image img { border-width: 0; }
 .page-roma .prose-image-link::after,
 .page-copenhagen .prose-image-link::after,
 .page-irlanda .prose-image-link::after,
 .page-berlin .prose-image-link::after,
 .page-dresden .prose-image-link::after,
-.page-marroc .prose-image-link::after {
+.page-marroc .prose-image-link::after,
+.page-emporda .prose-image-link::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -378,13 +384,15 @@ button.stars:focus-visible {
   .page-irlanda .prose-image,
   .page-berlin .prose-image,
   .page-dresden .prose-image,
-  .page-marroc .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
+  .page-marroc .prose-image,
+  .page-emporda .prose-image { display: block; width: 90%; margin: 1.2em auto 1.4em; }
   .page-roma .prose-image-link,
   .page-copenhagen .prose-image-link,
   .page-irlanda .prose-image-link,
   .page-berlin .prose-image-link,
   .page-dresden .prose-image-link,
-  .page-marroc .prose-image-link { --w: 15px; }
+  .page-marroc .prose-image-link,
+  .page-emporda .prose-image-link { --w: 15px; }
 }
 
 /* "ROMA: la Città Eterna" — darker parchment behind the reading column, to suit its photos */
@@ -443,6 +451,22 @@ button.stars:focus-visible {
 .page-marroc .prose a { color: var(--tinta); }
 .page-marroc .rating-table .stars { color: #8a4a16; }
 .page-marroc .rating-thanks { color: #5a3510; }
+
+/* "La Ruta del Tren Petit" — soft lavender reading column; the frame (frame-emporda.png) is an olive branch with
+   a sprig of lavender in each corner. Small print is darkened to stay legible. */
+.page-emporda .prose { background: var(--lavanda-suau); box-shadow: 0 0 40px rgba(70, 40, 110, 10%) inset; }
+.page-emporda .trip-info dt,
+.page-emporda .toc summary span,
+.page-emporda .post-nav a span,
+.page-emporda .route-map-wrap figcaption { color: #3f2a63; }
+.page-emporda .prose .meta,
+.page-emporda .prose .meta *,
+.page-emporda .refs,
+.page-emporda .rating-table,
+.page-emporda .rating-result,
+.page-emporda .prose a { color: var(--tinta); }
+.page-emporda .rating-table .stars { color: #6a4a9a; }
+.page-emporda .rating-thanks { color: #3f2a63; }
 
 /* "Com faig la motxilla per viatjar lleuger" — soft cream page + handwritten-look body text,
    like notes jotted in a travel notebook. Title stays in the site's display font on purpose. */
