@@ -56,6 +56,7 @@ function shell(activeHash, bodyHtml) {
       <span class="brand">Llum Nòmada · Panell</span>
       <nav>
         ${nav.map(([h, l]) => `<a href="${h}" class="${activeHash === h ? 'active' : ''}">${l}</a>`).join('')}
+        <a href="/api/lang-preview?lang=es" target="_blank" rel="noopener" title="Obre el web en castellà i anglès, amb les traduccions encara no publicades">Veure traduccions</a>
         <button class="logout" id="logoutBtn">Tanca sessió</button>
       </nav>
     </div>

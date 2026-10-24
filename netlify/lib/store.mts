@@ -14,12 +14,16 @@ function blogStore() {
 }
 
 function toIndexEntry(post: Post): IndexEntry {
-  const { blocks, refs, info, places, ...rest } = post;
+  const { blocks, refs, info, places, translations, ...rest } = post;
   void blocks;
   void refs;
   void info;
   void places;
-  return rest;
+  const i18n: NonNullable<IndexEntry['i18n']> = {};
+  for (const [lang, tr] of Object.entries(translations ?? {}) as Array<['es' | 'en', NonNullable<Post['translations']>['es']]>) {
+    if (tr) i18n[lang] = { status: tr.status, title: tr.title, lead: tr.lead, location: tr.location, series: tr.series, seriesLabel: tr.seriesLabel };
+  }
+  return Object.keys(i18n).length ? { ...rest, i18n } : rest;
 }
 
 async function seedIfEmpty(): Promise<void> {
@@ -102,6 +106,19 @@ export async function savePost(post: Post): Promise<Post> {
   const next = [...withoutThis, toIndexEntry(post)].sort((a, b) => (a.date < b.date ? 1 : -1));
   await store.setJSON('index.json', next);
 
+  return post;
+}
+
+/** Saves only the translations of a post: the Catalan text, its "updated" date and its reading time are left as they are. */
+export async function saveTranslations(id: string, translations: Post['translations']): Promise<Post | null> {
+  const post = await getPost(id);
+  if (!post) return null;
+  post.translations = translations && Object.keys(translations).length ? translations : undefined;
+  const store = blogStore();
+  await store.setJSON(`posts/${post.id}.json`, post);
+  const index = await listIndex();
+  const next = [...index.filter((p) => p.id !== post.id), toIndexEntry(post)].sort((a, b) => (a.date < b.date ? 1 : -1));
+  await store.setJSON('index.json', next);
   return post;
 }
 

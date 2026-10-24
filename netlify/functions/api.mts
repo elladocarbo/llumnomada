@@ -10,15 +10,16 @@ import {
   sessionCookieHeader,
   signSession,
 } from '../lib/auth.mts';
-import { deletePost, getPost, listIndex, getSettings, newPostId, saveSettings, savePost } from '../lib/store.mts';
+import { deletePost, getPost, listIndex, getSettings, newPostId, saveSettings, savePost, saveTranslations } from '../lib/store.mts';
 import { sanitizeRichText } from '../lib/sanitize.mts';
 import { renderNewsletterPage, renderPreview } from '../lib/html.mts';
 import { purgeBlogCache, noStoreHeaders } from '../lib/cache.mts';
 import { getStats } from '../lib/hits.mts';
 import { castVote } from '../lib/ratings.mts';
 import { geocodeLocation, geocodePlace } from '../lib/geocode.mts';
-import type { Block, Coords, Place, Post, PostInfo, Settings } from '../lib/types.mts';
-import { CONTACT_EMAIL, SESSION_TTL_SECONDS } from '../lib/config.mts';
+import type { Block, Coords, Place, Post, PostInfo, PostTranslation, Settings } from '../lib/types.mts';
+import { isLang, lp, TRANS_LANGS, type Lang } from '../lib/i18n.mts';
+import { CONTACT_EMAIL, LANG_PREVIEW_COOKIE, SESSION_TTL_SECONDS } from '../lib/config.mts';
 import { newsletterEnabled } from '../lib/newsletter-config.mts';
 import {
   allowRequest,
@@ -265,26 +266,31 @@ export default async (request: Request, context: Context) => {
   // ---- Newsletter: public endpoints (subscribe, confirm, unsubscribe) ----
   const seeOther = (where: string) => new Response(null, { status: 303, headers: noStoreHeaders({ location: where }) });
 
+  // The sign-up and unsubscribe forms say which language they were sent from, so the answer page comes back in it.
+  const langOf = (v: unknown): Lang => (isLang(v) ? v : 'ca');
+  const nlPage = (lang: Lang, kind: string) => seeOther(lp(lang, `/newsletter/${kind}/`));
+
   if (path === '/newsletter/subscribe' && method === 'POST') {
-    if (!newsletterEnabled()) return seeOther('/newsletter/no-disponible/');
+    if (!newsletterEnabled()) return nlPage('ca', 'no-disponible');
     const origin = request.headers.get('origin');
-    if (origin && origin !== url.origin) return seeOther('/newsletter/error/');
+    if (origin && origin !== url.origin) return nlPage('ca', 'error');
     let form: FormData;
     try {
       form = await request.formData();
     } catch {
-      return seeOther('/newsletter/error/');
+      return nlPage('ca', 'error');
     }
-    if (String(form.get('website') ?? '')) return seeOther('/newsletter/revisa/'); // honeypot: bots fill it
+    const lang = langOf(form.get('lang'));
+    if (String(form.get('website') ?? '')) return nlPage(lang, 'revisa'); // honeypot: bots fill it
     const email = normalizeEmail(form.get('email'));
     const secret = process.env.SESSION_SECRET;
-    if (!email || form.get('consent') !== '1' || !secret) return seeOther('/newsletter/error/');
-    if (!(await allowRequest(hashVisitor(getClientIp(request, context), secret)))) return seeOther('/newsletter/error/');
+    if (!email || form.get('consent') !== '1' || !secret) return nlPage(lang, 'error');
+    if (!(await allowRequest(hashVisitor(getClientIp(request, context), secret)))) return nlPage(lang, 'error');
 
     const { subscriber, sendConfirmation } = await requestSubscription(email);
-    if (sendConfirmation && !(await sendEmail(confirmationEmail(subscriber)))) return seeOther('/newsletter/error/');
+    if (sendConfirmation && !(await sendEmail(confirmationEmail(subscriber)))) return nlPage(lang, 'error');
     // Same answer whether or not the address was already subscribed, so it can't be probed.
-    return seeOther('/newsletter/revisa/');
+    return nlPage(lang, 'revisa');
   }
 
   if (path === '/newsletter/confirm' && method === 'GET') {
@@ -306,15 +312,17 @@ export default async (request: Request, context: Context) => {
     if (method === 'POST') {
       let id = url.searchParams.get('id') ?? '';
       let token = url.searchParams.get('t') ?? '';
+      let lang: Lang = 'ca';
       try {
         const form = await request.formData();
         id = String(form.get('id') ?? id);
         token = String(form.get('t') ?? token);
+        lang = langOf(form.get('lang'));
       } catch {
         // one-click POSTs carry the ids in the query string
       }
       const ok = await unsubscribe(id, token);
-      if ((request.headers.get('accept') ?? '').includes('text/html')) return seeOther(ok ? '/newsletter/baixa-feta/' : '/newsletter/error/');
+      if ((request.headers.get('accept') ?? '').includes('text/html')) return nlPage(lang, ok ? 'baixa-feta' : 'error');
       return new Response(ok ? 'ok' : 'invalid', { status: ok ? 200 : 400, headers: noStoreHeaders({ 'content-type': 'text/plain' }) });
     }
   }
@@ -333,7 +341,10 @@ export default async (request: Request, context: Context) => {
 
   if (path === '/settings' && method === 'POST') {
     const body = (await request.json()) as Partial<Settings>;
+    const current = await getSettings();
     const settings: Settings = {
+      // The panel's settings form doesn't know about languages: keep them unless they are sent.
+      languages: body.languages === undefined ? current.languages : (Array.isArray(body.languages) ? body.languages.filter((l): l is 'es' | 'en' => (TRANS_LANGS as string[]).includes(l)) : []),
       instagram: String(body.instagram ?? '').slice(0, 200),
       portrait: String(body.portrait ?? '').slice(0, 300),
       categories: sanitizeStringArray(body.categories, 50).slice(0, 50),
@@ -369,6 +380,8 @@ export default async (request: Request, context: Context) => {
       // Scripts that re-save a post without sending 'info' must not wipe it; the panel always sends it.
       info: body.info === undefined ? existing?.info : sanitizeInfo(body.info),
       country: body.country === undefined ? existing?.country : String(body.country).replace(/[<>]/g, '').trim().slice(0, 80),
+      // Translations are edited through their own endpoints: saving the Catalan text never wipes them.
+      translations: existing?.translations,
     };
 
     // Map position: coordinates typed in the panel win; otherwise they are looked up from the
@@ -430,6 +443,65 @@ export default async (request: Request, context: Context) => {
     const saved = await savePost(post);
     await purgeBlogCache();
     return json(saved);
+  }
+
+  // ---- Translations of a relat: /posts/<id>/translations/<es|en> ----
+  // PUT saves (as a draft unless told otherwise), PATCH changes the status, DELETE removes it.
+  // The translated blocks must line up one by one with the Catalan ones (same kinds, same order).
+  const trMatch = path.match(/^\/posts\/([^/]+)\/translations\/(es|en)$/);
+  if (trMatch) {
+    const post = await getPost(trMatch[1]);
+    if (!post) return json({ error: 'not_found' }, 404);
+    const lang = trMatch[2] as 'es' | 'en';
+    const all = { ...(post.translations ?? {}) };
+    if (method === 'GET') return json(all[lang] ?? null);
+    if (method === 'DELETE') {
+      delete all[lang];
+      await saveTranslations(post.id, all);
+      return json({ ok: true });
+    }
+    if (method === 'PATCH') {
+      const body = (await request.json()) as { status?: string };
+      const current = all[lang];
+      if (!current) return json({ error: 'no_translation' }, 404);
+      all[lang] = { ...current, status: body.status === 'published' ? 'published' : 'draft' };
+      await saveTranslations(post.id, all);
+      return json({ ok: true, status: all[lang]!.status });
+    }
+    if (method === 'PUT') {
+      const body = (await request.json()) as Partial<PostTranslation>;
+      const blocks = sanitizeBlocks(body.blocks);
+      const mismatch = blocks.length !== post.blocks.length || blocks.some((b, i) => (b.t === 'img') !== (post.blocks[i].t === 'img') || (b.t === 'img' && b.h !== post.blocks[i].h));
+      if (mismatch) return json({ error: 'block_mismatch', expected: post.blocks.length, got: blocks.length }, 400);
+      const clean = (v: unknown, max: number): string | undefined => String(v ?? '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, max) || undefined;
+      const tr: PostTranslation = {
+        status: body.status === 'published' ? 'published' : (all[lang]?.status ?? 'draft'),
+        title: clean(body.title, 200) ?? post.title,
+        lead: sanitizeRichText(String(body.lead ?? '')),
+        blocks,
+        location: clean(body.location, 200),
+        refs: body.refs === undefined ? undefined : sanitizeStringArray(body.refs, 500),
+        info: sanitizeInfo(body.info),
+        series: clean(body.series, 120),
+        seriesLabel: clean(body.seriesLabel, 80),
+        updated: new Date().toISOString(),
+      };
+      all[lang] = tr;
+      await saveTranslations(post.id, all);
+      return json({ ok: true, status: tr.status });
+    }
+  }
+
+  // Opens (or closes, with ?off=1) the author's preview of the translations that are not public yet:
+  // a cookie valid for the whole site, so /es/ and /en/ show every translation, drafts included.
+  if (path === '/lang-preview' && method === 'GET') {
+    const secret = process.env.SESSION_SECRET;
+    if (!secret) return json({ error: 'server_not_configured' }, 500);
+    const off = url.searchParams.get('off') === '1';
+    const value = off ? '' : signSession(auth.u, secret, 24 * 3600);
+    const cookie = [`${LANG_PREVIEW_COOKIE}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', 'SameSite=Lax', `Max-Age=${off ? 0 : 24 * 3600}`, ...(url.protocol === 'https:' ? ['Secure'] : [])].join('; ');
+    const lang = isLang(url.searchParams.get('lang')) ? (url.searchParams.get('lang') as Lang) : 'es';
+    return new Response(null, { status: 303, headers: noStoreHeaders({ location: off ? '/' : lp(lang, '/'), 'set-cookie': cookie }) });
   }
 
   const postMatch = path.match(/^\/posts\/([^/]+)$/);
