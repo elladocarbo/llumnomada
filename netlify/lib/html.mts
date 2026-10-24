@@ -61,7 +61,9 @@ interface LayoutOpts extends PageOpts {
 function renderLayout(opts: LayoutOpts): string {
   const { lang } = opts;
   const canonical = `${SITE}${lp(opts.canonicalLang ?? lang, opts.path)}`;
-  const alternates = opts.langs.length > 1
+  // A page that shows the Catalan text under another language (an untranslated relat) points to the Catalan
+  // original and does not claim to be an alternate version of it.
+  const alternates = opts.langs.length > 1 && !opts.canonicalLang
     ? opts.langs.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}${lp(l, opts.path)}">`).join('\n') + `\n<link rel="alternate" hreflang="x-default" href="${SITE}${lp('ca', opts.path)}">`
     : '';
   return `<!doctype html>
