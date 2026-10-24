@@ -9,6 +9,8 @@ export const INSTAGRAM_HANDLE = '@llumnomada';
 export const INSTAGRAM_URL = 'https://www.instagram.com/llumnomada';
 
 export const SESSION_COOKIE = 'llumnomada_panel';
+/** Set from the panel (Path=/) so the author can browse the translations that are still drafts. */
+export const LANG_PREVIEW_COOKIE = 'llumnomada_langprev';
 export const SESSION_TTL_SECONDS = 7 * 24 * 3600;
 
 export const LOGIN_MAX_FAILS = 5;

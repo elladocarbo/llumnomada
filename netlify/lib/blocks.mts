@@ -1,6 +1,7 @@
 import type { Block } from './types.mts';
 import { decodeHtmlEntities, escapeHtml } from './sanitize.mts';
 import { imageSrcset, imageUrl } from './images.mts';
+import { t, type Lang } from './i18n.mts';
 
 const WORDS_PER_MINUTE = 200;
 
@@ -45,20 +46,20 @@ function headingIds(blocks: Block[]): Map<number, string> {
 
 /** Collapsible table of contents built from the post's subtitles (needs at least 3). Pure HTML
  *  (<details>), no JS. */
-export function renderToc(blocks: Block[]): string {
+export function renderToc(blocks: Block[], lang: Lang = 'ca'): string {
   const ids = headingIds(blocks);
   if (ids.size < 3) return '';
   const items = [...ids.entries()]
     .map(([i, id]) => `<li><a href="#${id}">${stripTags(blocks[i].h).replace(/\s+/g, ' ').trim()}</a></li>`)
     .join('');
-  return `<nav class="toc" aria-label="Índex del relat"><details><summary>Índex del relat <span>(${ids.size} seccions)</span></summary><ol>${items}</ol></details></nav>`;
+  return `<nav class="toc" aria-label="${t(lang, 'toc.aria')}"><details><summary>${t(lang, 'toc.title')} <span>${t(lang, 'toc.sections', { n: ids.size })}</span></summary><ol>${items}</ol></details></nav>`;
 }
 
 /** Renders a post's block list to article-body HTML. Block `h` is expected to already be
  *  sanitized (only strong/em/br, or a validated /img/ path for 'img') by sanitize.mts at
  *  write time — this does not re-sanitize. Images render as a click-to-enlarge figure: a
  *  thumbnail link jumping to a `:target`-shown fullscreen overlay, no JS required. */
-export function renderBlocks(blocks: Block[]): string {
+export function renderBlocks(blocks: Block[], lang: Lang = 'ca'): string {
   const ids = headingIds(blocks);
   return blocks
     .map((block, i) => {
@@ -77,7 +78,7 @@ export function renderBlocks(blocks: Block[]): string {
           // The overlay image is lazy on purpose: inside a display:none box a lazy <img> isn't
           // fetched until :target reveals it, so enlarged copies don't load with the page.
           return `<figure class="prose-image">
-  <a href="#${id}" class="prose-image-link" aria-label="Amplia la imatge"><img ${thumbAttrs} alt="${alt}" loading="lazy" decoding="async"></a>
+  <a href="#${id}" class="prose-image-link" aria-label="${t(lang, 'img.enlarge')}"><img ${thumbAttrs} alt="${alt}" loading="lazy" decoding="async"></a>
 </figure>
 <a href="#_top" class="lightbox" id="${id}"><img src="${imageUrl(block.h, 1600)}" alt="${alt}" loading="lazy" decoding="async"></a>`;
         }

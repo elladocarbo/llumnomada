@@ -30,6 +30,24 @@ export interface PostInfo {
   transport?: string;
 }
 
+/** A relat translated to another language. Same blocks, in the same order (images keep their path
+ *  and get a translated description). `draft` translations are only visible to the author. */
+export interface PostTranslation {
+  status: 'draft' | 'published';
+  title: string;
+  lead: string;
+  blocks: Block[];
+  location?: string;
+  refs?: string[];
+  info?: PostInfo;
+  /** Translated name of the series and short name of this part. */
+  series?: string;
+  seriesLabel?: string;
+  updated: string;
+}
+
+export type PostTranslations = Partial<Record<'es' | 'en', PostTranslation>>;
+
 export interface Post {
   id: string;
   slug: string | null;
@@ -54,6 +72,8 @@ export interface Post {
   seriesLabel?: string;
   /** Places visited, in order: drawn as a route on a static map at the top of the relat. */
   places?: Place[];
+  /** Versions of this relat in other languages (Catalan is the post itself). */
+  translations?: PostTranslations;
   date: string;
   updated: string;
   status: 'draft' | 'published';
@@ -62,9 +82,23 @@ export interface Post {
   info?: PostInfo;
 }
 
-export type IndexEntry = Omit<Post, 'blocks' | 'refs' | 'info' | 'places'>;
+/** What lists need to know about a translation (no body). */
+export interface EntryTranslation {
+  status: 'draft' | 'published';
+  title: string;
+  lead?: string;
+  location?: string;
+  series?: string;
+  seriesLabel?: string;
+}
+
+export type IndexEntry = Omit<Post, 'blocks' | 'refs' | 'info' | 'places' | 'translations'> & {
+  i18n?: Partial<Record<'es' | 'en', EntryTranslation>>;
+};
 
 export interface Settings {
+  /** Languages shown to everybody (the author can always preview the rest). Catalan is always on. */
+  languages?: Array<'es' | 'en'>;
   instagram: string;
   portrait: string;
   categories: string[];
