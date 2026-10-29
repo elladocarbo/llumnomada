@@ -26,10 +26,12 @@ import {
   confirmSubscription,
   confirmationEmail,
   deleteSubscriber,
+  subscriberLang,
   hashVisitor,
   INVITE_BATCH_LIMIT,
   INVITE_DAILY_LIMIT,
   inviteAddresses,
+  getSubscriber,
   listSubscribers,
   normalizeEmail,
   postEmail,
@@ -287,17 +289,22 @@ export default async (request: Request, context: Context) => {
     if (!email || form.get('consent') !== '1' || !secret) return nlPage(lang, 'error');
     if (!(await allowRequest(hashVisitor(getClientIp(request, context), secret)))) return nlPage(lang, 'error');
 
-    const { subscriber, sendConfirmation } = await requestSubscription(email);
+    const { subscriber, sendConfirmation } = await requestSubscription(email, lang);
     if (sendConfirmation && !(await sendEmail(confirmationEmail(subscriber)))) return nlPage(lang, 'error');
     // Same answer whether or not the address was already subscribed, so it can't be probed.
     return nlPage(lang, 'revisa');
   }
 
   if (path === '/newsletter/confirm' && method === 'GET') {
-    const ok = await confirmSubscription(url.searchParams.get('id') ?? '', url.searchParams.get('t') ?? '');
+    const subId = url.searchParams.get('id') ?? '';
+    const ok = await confirmSubscription(subId, url.searchParams.get('t') ?? '');
+    // The answer comes in the language the person signed up in (if that language is open).
+    const subLang = ok ? subscriberLang((await getSubscriber(subId))!) : 'ca';
+    const open: Lang[] = ['ca', ...((await getSettings()).languages ?? [])];
+    const pageLang: Lang = open.includes(subLang) ? subLang : 'ca';
     // Answered in place (not redirected): the platform would copy this URL's query — which holds the
     // secret token — onto the redirect target.
-    return new Response(renderNewsletterPage(ok ? 'confirmat' : 'error'), {
+    return new Response(renderNewsletterPage(ok ? 'confirmat' : 'error', {}, { lang: pageLang, langs: open }), {
       status: ok ? 200 : 400,
       headers: noStoreHeaders({ 'content-type': 'text/html; charset=utf-8' }),
     });
@@ -568,7 +575,7 @@ export default async (request: Request, context: Context) => {
         pending: subs.filter((x) => x.status === 'pending').length,
         unsubscribed: subs.filter((x) => x.status === 'unsubscribed').length,
       },
-      subscribers: subs.map(({ id, email, status, createdAt, confirmedAt }) => ({ id, email, status, createdAt, confirmedAt })),
+      subscribers: subs.map((x) => ({ id: x.id, email: x.email, status: x.status, createdAt: x.createdAt, confirmedAt: x.confirmedAt, lang: subscriberLang(x) })),
       posts: published.map((p) => ({ id: p.id, title: p.title, date: p.date })),
       sent,
     });
@@ -582,26 +589,27 @@ export default async (request: Request, context: Context) => {
 
   if (path === '/newsletter/send' && method === 'POST') {
     if (!newsletterEnabled()) return json({ error: 'not_configured' }, 400);
-    const body = (await request.json()) as { postId?: string; testTo?: string };
+    const body = (await request.json()) as { postId?: string; testTo?: string; lang?: string };
     const post = body.postId ? await getPost(String(body.postId)) : null;
     if (!post || post.status !== 'published' || !post.slug) return json({ error: 'post_not_published' }, 400);
+    const openLangs: Lang[] = ['ca', ...((await getSettings()).languages ?? [])];
 
     if (body.testTo !== undefined) {
       const to = normalizeEmail(body.testTo);
       if (!to) return json({ error: 'invalid_email' }, 400);
-      return json({ ok: await sendEmail(postEmail(post, to)) });
+      return json({ ok: await sendEmail(postEmail(post, to, undefined, openLangs, langOf(body.lang))) });
     }
-    return json(await sendPostBatch(post, 7000));
+    return json(await sendPostBatch(post, 7000, openLangs));
   }
 
   if (path === '/newsletter/invite' && method === 'POST') {
     if (!newsletterEnabled()) return json({ error: 'not_configured' }, 400);
-    const body = (await request.json()) as { emails?: unknown; note?: unknown; knowsThem?: unknown };
+    const body = (await request.json()) as { emails?: unknown; note?: unknown; knowsThem?: unknown; lang?: unknown };
     if (body.knowsThem !== true) return json({ error: 'confirmation_required' }, 400);
     const emails = Array.isArray(body.emails) ? body.emails.map((e) => String(e)) : [];
     if (!emails.length) return json({ error: 'no_emails' }, 400);
     return json({
-      results: await inviteAddresses(emails, String(body.note ?? '')),
+      results: await inviteAddresses(emails, String(body.note ?? ''), ['ca', ...((await getSettings()).languages ?? [])].includes(langOf(body.lang)) ? langOf(body.lang) : 'ca'),
       dailyLimit: INVITE_DAILY_LIMIT,
       batchLimit: INVITE_BATCH_LIMIT,
     });

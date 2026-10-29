@@ -4,6 +4,7 @@ import { AUTHOR_NAME, CONTACT_EMAIL, SITE, SITE_NAME } from './config.mts';
 import { escapeHtml } from './sanitize.mts';
 import { compactOldDays } from './hits.mts';
 import type { Post } from './types.mts';
+import { isLang, lp, translationOf, type Lang } from './i18n.mts';
 
 // ---------------------------------------------------------------------------------------------
 // Subscribers live in the site's own Blobs store; Brevo is only used to *send* mail. A subscriber
@@ -25,6 +26,12 @@ export interface Subscriber {
   confirmedAt?: string;
   unsubscribedAt?: string;
   lastConfirmationSentAt?: string;
+  /** Language of the page they signed up from; their e-mails come in it. Absent = Catalan. */
+  lang?: Lang;
+}
+
+export function subscriberLang(sub: Subscriber): Lang {
+  return isLang(sub.lang) ? sub.lang : 'ca';
 }
 
 export const CONSENT_VERSION = 'v1';
@@ -93,7 +100,7 @@ export interface SubscribeOutcome {
   sendConfirmation: boolean;
 }
 
-export async function requestSubscription(email: string): Promise<SubscribeOutcome> {
+export async function requestSubscription(email: string, lang: Lang = 'ca'): Promise<SubscribeOutcome> {
   const id = emailId(email);
   const existing = await getSubscriber(id);
   const now = new Date().toISOString();
@@ -115,6 +122,7 @@ export async function requestSubscription(email: string): Promise<SubscribeOutco
     consentAt: now,
     consentVersion: CONSENT_VERSION,
     lastConfirmationSentAt: now,
+    lang,
   };
   await store().setJSON(`subs/${id}.json`, subscriber);
   return { subscriber, sendConfirmation: true };
@@ -188,8 +196,8 @@ export async function sendEmail(mail: OutgoingEmail): Promise<boolean> {
   }
 }
 
-export function unsubscribeLink(sub: Subscriber): string {
-  return `${SITE}/newsletter/baixa/?id=${sub.id}&t=${sub.token}`;
+export function unsubscribeLink(sub: Subscriber, lang: Lang = subscriberLang(sub)): string {
+  return `${SITE}${lp(lang, '/newsletter/baixa/')}?id=${sub.id}&t=${sub.token}`;
 }
 
 function oneClickUnsubscribeUrl(sub: Subscriber): string {
@@ -200,8 +208,8 @@ const INK = '#1e211c';
 const GOLD = '#a07c33';
 const PARCHMENT = '#ede6d6';
 
-function frame(inner: string, footer: string): string {
-  return `<!doctype html><html lang="ca"><body style="margin:0;padding:0;background:${PARCHMENT};">
+function frame(inner: string, footer: string, lang: Lang = 'ca'): string {
+  return `<!doctype html><html lang="${lang}"><body style="margin:0;padding:0;background:${PARCHMENT};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PARCHMENT};"><tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fbf7ee;border:1px solid #d8cfb8;">
 <tr><td style="padding:22px 28px 6px;font-family:Georgia,serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:${GOLD};">${escapeHtml(SITE_NAME)}</td></tr>
@@ -214,16 +222,97 @@ function button(href: string, label: string): string {
   return `<p style="margin:22px 0;"><a href="${escapeHtml(href)}" style="display:inline-block;padding:12px 24px;background:${INK};color:#fbf7ee;text-decoration:none;font-family:Arial,sans-serif;font-size:14px;letter-spacing:1px;text-transform:uppercase;">${escapeHtml(label)}</a></p>`;
 }
 
+// Wording of the e-mails, per language. {site} and {author} are filled in.
+const MAIL = {
+  ca: {
+    confirmSubject: 'Confirma la teva subscripció a {site}',
+    hello: 'Hola!',
+    confirmBody: 'Algú (esperem que tu) ha demanat rebre els relats nous de {site} en aquest correu. Per confirmar-ho, prem el botó:',
+    confirmButton: 'Confirma la subscripció',
+    confirmIgnore: 'Si no ho has demanat tu, ignora aquest missatge i no rebràs res.',
+    confirmFooter: "Aquest missatge s'envia una sola vegada per confirmar la teva adreça.",
+    readButton: 'Llegeix el relat',
+    readText: 'Llegeix el relat',
+    whySubscribed: "Reps aquest correu perquè t'has subscrit a {site}.",
+    unsubscribe: "Dona't de baixa",
+    unsubscribeWhen: 'quan vulguis.',
+    unsubscribeText: 'Per donar-te de baixa',
+    testFooter: "Aquesta és una prova: les persones subscrites hi veuran l'enllaç per donar-se de baixa.",
+    inviteSubject: '{author} et convida a {site}',
+    inviteIntro: "Sóc {author}, i escric {site}, un blog de viatges. T’escric per convidar-te a rebre els relats nous per correu quan els publiqui.",
+    inviteButton: 'Vull subscriure’m',
+    inviteNote: 'No t’has subscrit encara: només ho estaràs si fas clic al botó i confirmes la teva adreça.',
+    inviteFooter: 'Aquest és un missatge únic, enviat personalment per {author}. Si no t’interessa, ignora’l: no et tornaré a escriure. Pots respondre a aquest correu.',
+    inviteText: 'Sóc {author}, i escric {site}, un blog de viatges. Et convido a rebre els relats nous per correu.',
+    inviteSubscribeText: "Per subscriure't",
+    inviteOnce: "Aquest és un missatge únic; si no t'interessa, ignora'l: no et tornaré a escriure.",
+  },
+  es: {
+    confirmSubject: 'Confirma tu suscripción a {site}',
+    hello: '¡Hola!',
+    confirmBody: 'Alguien (esperamos que tú) ha pedido recibir los relatos nuevos de {site} en este correo. Para confirmarlo, pulsa el botón:',
+    confirmButton: 'Confirmar la suscripción',
+    confirmIgnore: 'Si no lo has pedido tú, ignora este mensaje y no recibirás nada.',
+    confirmFooter: 'Este mensaje se envía una sola vez para confirmar tu dirección.',
+    readButton: 'Leer el relato',
+    readText: 'Leer el relato',
+    whySubscribed: 'Recibes este correo porque te has suscrito a {site}.',
+    unsubscribe: 'Date de baja',
+    unsubscribeWhen: 'cuando quieras.',
+    unsubscribeText: 'Para darte de baja',
+    testFooter: 'Esto es una prueba: las personas suscritas verán aquí el enlace para darse de baja.',
+    inviteSubject: '{author} te invita a {site}',
+    inviteIntro: 'Soy {author}, y escribo {site}, un blog de viajes. Te escribo para invitarte a recibir los relatos nuevos por correo cuando los publique.',
+    inviteButton: 'Quiero suscribirme',
+    inviteNote: 'Todavía no te has suscrito: solo lo estarás si pulsas el botón y confirmas tu dirección.',
+    inviteFooter: 'Este es un mensaje único, enviado personalmente por {author}. Si no te interesa, ignóralo: no volveré a escribirte. Puedes responder a este correo.',
+    inviteText: 'Soy {author}, y escribo {site}, un blog de viajes. Te invito a recibir los relatos nuevos por correo.',
+    inviteSubscribeText: 'Para suscribirte',
+    inviteOnce: 'Este es un mensaje único; si no te interesa, ignóralo: no volveré a escribirte.',
+  },
+  en: {
+    confirmSubject: 'Confirm your subscription to {site}',
+    hello: 'Hello!',
+    confirmBody: 'Someone (we hope you) asked to receive the new stories from {site} at this address. To confirm, press the button:',
+    confirmButton: 'Confirm subscription',
+    confirmIgnore: "If it wasn't you, just ignore this message and you won't receive anything.",
+    confirmFooter: 'This message is sent only once, to confirm your address.',
+    readButton: 'Read the story',
+    readText: 'Read the story',
+    whySubscribed: 'You are receiving this e-mail because you subscribed to {site}.',
+    unsubscribe: 'Unsubscribe',
+    unsubscribeWhen: 'whenever you like.',
+    unsubscribeText: 'To unsubscribe',
+    testFooter: 'This is a test: subscribers will see the unsubscribe link here.',
+    inviteSubject: '{author} invites you to {site}',
+    inviteIntro: "I'm {author}, and I write {site}, a travel blog. I'm writing to invite you to receive new stories by e-mail when I publish them.",
+    inviteButton: 'I want to subscribe',
+    inviteNote: "You haven't subscribed yet: you will only be subscribed if you click the button and confirm your address.",
+    inviteFooter: "This is a one-off message, sent personally by {author}. If it's not for you, just ignore it: I won't write again. You can reply to this e-mail.",
+    inviteText: "I'm {author}, and I write {site}, a travel blog. I invite you to receive new stories by e-mail.",
+    inviteSubscribeText: 'To subscribe',
+    inviteOnce: "This is a one-off message; if it's not for you, just ignore it: I won't write again.",
+  },
+} as const;
+
+function m(lang: Lang, key: keyof (typeof MAIL)['ca'], vars: Record<string, string> = {}): string {
+  let s: string = MAIL[lang][key];
+  for (const [k, v] of Object.entries({ site: SITE_NAME, author: AUTHOR_NAME, ...vars })) s = s.split(`{${k}}`).join(v);
+  return s;
+}
+
 export function confirmationEmail(sub: Subscriber): OutgoingEmail {
+  const lang = subscriberLang(sub);
   const url = `${SITE}/api/newsletter/confirm?id=${sub.id}&t=${sub.token}`;
   return {
     to: sub.email,
-    subject: `Confirma la teva subscripció a ${SITE_NAME}`,
+    subject: m(lang, 'confirmSubject'),
     html: frame(
-      `<p style="margin:0 0 12px;">Hola!</p><p style="margin:0 0 12px;">Algú (esperem que tu) ha demanat rebre els relats nous de ${escapeHtml(SITE_NAME)} en aquest correu. Per confirmar-ho, prem el botó:</p>${button(url, 'Confirma la subscripció')}<p style="margin:0;font-size:14px;color:#5b584d;">Si no ho has demanat tu, ignora aquest missatge i no rebràs res.</p>`,
-      `Aquest missatge s'envia una sola vegada per confirmar la teva adreça. ${escapeHtml(SITE_NAME)} · ${escapeHtml(CONTACT_EMAIL)}`,
+      `<p style="margin:0 0 12px;">${m(lang, 'hello')}</p><p style="margin:0 0 12px;">${escapeHtml(m(lang, 'confirmBody'))}</p>${button(url, m(lang, 'confirmButton'))}<p style="margin:0;font-size:14px;color:#5b584d;">${escapeHtml(m(lang, 'confirmIgnore'))}</p>`,
+      `${escapeHtml(m(lang, 'confirmFooter'))} ${escapeHtml(SITE_NAME)} · ${escapeHtml(CONTACT_EMAIL)}`,
+      lang,
     ),
-    text: `Confirma la teva subscripció a ${SITE_NAME}: ${url}\n\nSi no ho has demanat tu, ignora aquest missatge i no rebràs res.`,
+    text: `${m(lang, 'confirmButton')}: ${url}\n\n${m(lang, 'confirmIgnore')}`,
   };
 }
 
@@ -237,21 +326,28 @@ function coverUrl(cover: string): string {
   return cover.startsWith('http') ? cover : `${SITE}${cover}`;
 }
 
-/** The e-mail for one published relat. `sub` is undefined for the test message sent to the author. */
-export function postEmail(post: Post, to: string, sub?: Subscriber): OutgoingEmail {
-  const url = `${SITE}/blog/${post.slug}/`;
+/** The e-mail for one published relat, in the subscriber's language when that language is open and
+ *  the relat has a published translation (otherwise in Catalan). `sub` is undefined for the test
+ *  message sent to the author, who picks the language with `testLang`. */
+export function postEmail(post: Post, to: string, sub?: Subscriber, open: Lang[] = ['ca'], testLang: Lang = 'ca'): OutgoingEmail {
+  const wanted = sub ? subscriberLang(sub) : testLang;
+  const tr = wanted !== 'ca' && open.includes(wanted) ? translationOf(post, wanted, false) : undefined;
+  const lang: Lang = tr ? wanted : 'ca';
+  const title = tr ? tr.title : post.title;
+  const lead = tr ? tr.lead : post.lead;
+  const url = `${SITE}${lp(lang, `/blog/${post.slug}/`)}`;
   const cover = coverUrl(post.cover);
   const inner = `${cover ? `<p style="margin:0 0 18px;"><a href="${escapeHtml(url)}"><img src="${escapeHtml(cover)}" alt="" width="504" style="display:block;width:100%;max-width:504px;height:auto;border:0;"></a></p>` : ''}
-<h1 style="margin:0 0 12px;font-family:Georgia,serif;font-size:26px;line-height:1.25;font-weight:normal;color:${INK};">${escapeHtml(post.title)}</h1>
-<p style="margin:0;">${post.lead}</p>${button(url, 'Llegeix el relat')}`;
+<h1 style="margin:0 0 12px;font-family:Georgia,serif;font-size:26px;line-height:1.25;font-weight:normal;color:${INK};">${escapeHtml(title)}</h1>
+<p style="margin:0;">${lead}</p>${button(url, m(lang, 'readButton'))}`;
   const footer = sub
-    ? `Reps aquest correu perquè t'has subscrit a ${escapeHtml(SITE_NAME)}. <a href="${escapeHtml(unsubscribeLink(sub))}" style="color:#7a766a;">Dona't de baixa</a> quan vulguis. · ${escapeHtml(CONTACT_EMAIL)}`
-    : `Aquesta és una prova: les persones subscrites hi veuran l'enllaç per donar-se de baixa. · ${escapeHtml(CONTACT_EMAIL)}`;
+    ? `${escapeHtml(m(lang, 'whySubscribed'))} <a href="${escapeHtml(unsubscribeLink(sub, lang))}" style="color:#7a766a;">${escapeHtml(m(lang, 'unsubscribe'))}</a> ${escapeHtml(m(lang, 'unsubscribeWhen'))} · ${escapeHtml(CONTACT_EMAIL)}`
+    : `${escapeHtml(m(lang, 'testFooter'))} · ${escapeHtml(CONTACT_EMAIL)}`;
   return {
     to,
-    subject: post.title,
-    html: frame(inner, footer),
-    text: `${post.title}\n\n${plain(post.lead)}\n\nLlegeix el relat: ${url}${sub ? `\n\nPer donar-te de baixa: ${unsubscribeLink(sub)}` : ''}`,
+    subject: title,
+    html: frame(inner, footer, lang),
+    text: `${title}\n\n${plain(lead)}\n\n${m(lang, 'readText')}: ${url}${sub ? `\n\n${m(lang, 'unsubscribeText')}: ${unsubscribeLink(sub, lang)}` : ''}`,
     unsubscribeUrl: sub ? oneClickUnsubscribeUrl(sub) : undefined,
   };
 }
@@ -273,7 +369,7 @@ export interface BatchResult {
 
 /** Sends `post` to active subscribers who haven't got it yet, for at most `budgetMs`. Calling it
  *  again continues where it stopped (each delivery is recorded), so a relat is never sent twice. */
-export async function sendPostBatch(post: Post, budgetMs: number): Promise<BatchResult> {
+export async function sendPostBatch(post: Post, budgetMs: number, open: Lang[] = ['ca']): Promise<BatchResult> {
   const s = store();
   const started = Date.now();
   const active = (await listSubscribers()).filter((x) => x.status === 'active');
@@ -287,7 +383,7 @@ export async function sendPostBatch(post: Post, budgetMs: number): Promise<Batch
     const chunk = todo.slice(i, i + 4);
     const results = await Promise.all(
       chunk.map(async (sub) => {
-        const ok = await sendEmail(postEmail(post, sub.email, sub));
+        const ok = await sendEmail(postEmail(post, sub.email, sub, open));
         if (ok) await s.set(`sent/${post.id}/${sub.id}`, new Date().toISOString());
         return ok;
       }),
@@ -306,18 +402,19 @@ export async function sendPostBatch(post: Post, budgetMs: number): Promise<Batch
 export const INVITE_DAILY_LIMIT = 20;
 export const INVITE_BATCH_LIMIT = 10;
 
-export function invitationEmail(to: string, note: string): OutgoingEmail {
-  const url = `${SITE}/newsletter/`;
+export function invitationEmail(to: string, note: string, lang: Lang = 'ca'): OutgoingEmail {
+  const url = `${SITE}${lp(lang, '/newsletter/')}`;
   const safeNote = note.trim().slice(0, 400);
   const noteHtml = safeNote ? `<p style="margin:0 0 14px;padding:10px 14px;border-left:3px solid ${GOLD};font-style:italic;">${escapeHtml(safeNote).replace(/\n/g, '<br>')}</p>` : '';
   return {
     to,
-    subject: `${AUTHOR_NAME} et convida a ${SITE_NAME}`,
+    subject: m(lang, 'inviteSubject'),
     html: frame(
-      `<p style="margin:0 0 12px;">Hola!</p><p style="margin:0 0 12px;">Sóc ${escapeHtml(AUTHOR_NAME)}, i escric ${escapeHtml(SITE_NAME)}, un blog de viatges. T’escric per convidar-te a rebre els relats nous per correu quan els publiqui.</p>${noteHtml}${button(url, 'Vull subscriure’m')}<p style="margin:0;font-size:14px;color:#5b584d;">No t’has subscrit encara: només ho estaràs si fas clic al botó i confirmes la teva adreça.</p>`,
-      `Aquest és un missatge únic, enviat personalment per ${escapeHtml(AUTHOR_NAME)}. Si no t’interessa, ignora’l: no et tornaré a escriure. Pots respondre a aquest correu. · ${escapeHtml(CONTACT_EMAIL)}`,
+      `<p style="margin:0 0 12px;">${m(lang, 'hello')}</p><p style="margin:0 0 12px;">${escapeHtml(m(lang, 'inviteIntro'))}</p>${noteHtml}${button(url, m(lang, 'inviteButton'))}<p style="margin:0;font-size:14px;color:#5b584d;">${escapeHtml(m(lang, 'inviteNote'))}</p>`,
+      `${escapeHtml(m(lang, 'inviteFooter'))} · ${escapeHtml(CONTACT_EMAIL)}`,
+      lang,
     ),
-    text: `Hola! Sóc ${AUTHOR_NAME}, i escric ${SITE_NAME}, un blog de viatges. Et convido a rebre els relats nous per correu.${safeNote ? `\n\n"${safeNote}"` : ''}\n\nPer subscriure't: ${url}\n\nAquest és un missatge únic; si no t'interessa, ignora'l: no et tornaré a escriure.`,
+    text: `${m(lang, 'hello')} ${m(lang, 'inviteText')}${safeNote ? `\n\n"${safeNote}"` : ''}\n\n${m(lang, 'inviteSubscribeText')}: ${url}\n\n${m(lang, 'inviteOnce')}`,
     replyTo: process.env.NEWSLETTER_FROM_EMAIL || CONTACT_EMAIL,
   };
 }
@@ -325,7 +422,7 @@ export function invitationEmail(to: string, note: string): OutgoingEmail {
 export type InviteResult = 'sent' | 'invalid' | 'already_subscribed' | 'already_invited' | 'daily_limit' | 'failed';
 
 /** Invites each address (at most INVITE_BATCH_LIMIT per call and INVITE_DAILY_LIMIT per day). */
-export async function inviteAddresses(rawEmails: string[], note: string): Promise<Array<{ email: string; result: InviteResult }>> {
+export async function inviteAddresses(rawEmails: string[], note: string, lang: Lang = 'ca'): Promise<Array<{ email: string; result: InviteResult }>> {
   const s = store();
   const day = new Date().toISOString().slice(0, 10);
   const counterKey = `invite-day/${day}`;
@@ -356,7 +453,7 @@ export async function inviteAddresses(rawEmails: string[], note: string): Promis
       out.push({ email, result: 'daily_limit' });
       continue;
     }
-    const ok = await sendEmail(invitationEmail(email, note));
+    const ok = await sendEmail(invitationEmail(email, note, lang));
     if (ok) {
       usedToday++;
       await s.set(`invited/${id}`, new Date().toISOString());
@@ -413,6 +510,6 @@ export function subscribersCsv(subs: Subscriber[]): string {
     const safe = /^[=+\-@]/.test(v) ? `'${v}` : v;
     return `"${safe.replace(/"/g, '""')}"`;
   };
-  const rows = subs.map((x) => [x.email, x.status, x.createdAt, x.confirmedAt ?? '', x.unsubscribedAt ?? ''].map(cell).join(','));
-  return ['email,estat,alta,confirmat,baixa', ...rows].join('\r\n');
+  const rows = subs.map((x) => [x.email, x.status, x.createdAt, x.confirmedAt ?? '', x.unsubscribedAt ?? '', subscriberLang(x)].map(cell).join(','));
+  return ['email,estat,alta,confirmat,baixa,idioma', ...rows].join('\r\n');
 }
