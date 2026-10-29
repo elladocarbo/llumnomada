@@ -610,6 +610,8 @@ async function renderNewsletter() {
   }
 
   const fmt = (iso) => (iso ? new Date(iso).toLocaleDateString('ca-ES') : '');
+  const langName = { ca: 'Català', es: 'Castellano', en: 'English' };
+  const langOptions = Object.entries(langName).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
   const label = { active: 'Subscrit/a', pending: 'Pendent de confirmar', unsubscribed: 'De baixa' };
   body.innerHTML = `
     <div class="card">
@@ -623,9 +625,11 @@ async function renderNewsletter() {
       <select id="nlPost">
         ${data.posts.map((p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.title)}${data.sent[p.id] ? ` — ja enviat a ${data.sent[p.id]}` : ''}</option>`).join('')}
       </select>
+      <p class="hint">Cada subscripció rep el correu en l’idioma en què es va apuntar; si el relat encara no té traducció publicada en aquest idioma, el rep en català.</p>
       <label for="nlTest" style="margin-top:1em">Correu per a una prova</label>
       <div class="row">
         <input type="email" id="nlTest" placeholder="el-teu@correu.cat" style="flex:1 1 240px">
+        <select id="nlTestLang" aria-label="Idioma de la prova" style="flex:0 0 auto;width:auto">${langOptions}</select>
         <button type="button" class="secondary" id="nlTestBtn">Envia’m una prova</button>
       </div>
       <div class="row" style="margin-top:1em">
@@ -639,6 +643,8 @@ async function renderNewsletter() {
       <p class="hint">Envia un únic missatge amb l’enllaç per subscriure’s a persones que coneixes. No queden afegides a la llista: s’hi subscriuen elles, i han de confirmar-ho. Màxim 10 adreces per cop i 20 al dia. No s’envia a qui ja hi és ni a qui s’ha donat de baixa.</p>
       <label for="invEmails">Adreces (una per línia, o separades per comes)</label>
       <textarea id="invEmails" rows="4" placeholder="amic@correu.cat&#10;germana@correu.cat"></textarea>
+      <label for="invLang" style="margin-top:1em">Idioma de la invitació</label>
+      <select id="invLang" style="width:auto">${langOptions}</select>
       <label for="invNote" style="margin-top:1em">Un missatge personal (opcional, màx. 400 caràcters)</label>
       <textarea id="invNote" rows="2" maxlength="400" placeholder="Ex.: T’he parlat del meu blog; hi explico els viatges que faig."></textarea>
       <label style="margin-top:1em;display:flex;gap:.5em;align-items:flex-start"><input type="checkbox" id="invKnow"> Conec personalment aquestes persones i és raonable que rebin aquest missatge.</label>
@@ -649,9 +655,9 @@ async function renderNewsletter() {
     <h2>Subscriptors</h2>
     <div class="card">
       ${data.subscribers.length ? `<div class="table-wrap"><table>
-        <thead><tr><th>Correu</th><th>Estat</th><th>Alta</th><th></th></tr></thead>
+        <thead><tr><th>Correu</th><th>Estat</th><th>Idioma</th><th>Alta</th><th></th></tr></thead>
         <tbody>${data.subscribers.map((s) => `<tr>
-          <td>${escapeHtml(s.email)}</td><td>${label[s.status] || escapeHtml(s.status)}</td><td>${fmt(s.createdAt)}</td>
+          <td>${escapeHtml(s.email)}</td><td>${label[s.status] || escapeHtml(s.status)}</td><td>${langName[s.lang] || 'Català'}</td><td>${fmt(s.createdAt)}</td>
           <td><button type="button" class="danger" data-del="${escapeHtml(s.id)}">Esborra</button></td></tr>`).join('')}</tbody>
       </table></div>
       <p class="hint"><a href="/api/newsletter/export">Descarrega la llista (CSV)</a></p>` : '<p class="hint">Encara no hi ha cap subscripció.</p>'}
@@ -665,7 +671,7 @@ async function renderNewsletter() {
     if (!to) { msg.textContent = 'Escriu un correu per a la prova.'; return; }
     msg.textContent = 'Enviant la prova…';
     try {
-      const r = await api('/newsletter/send', { method: 'POST', body: { postId: postId(), testTo: to } });
+      const r = await api('/newsletter/send', { method: 'POST', body: { postId: postId(), testTo: to, lang: document.getElementById('nlTestLang').value } });
       msg.textContent = r.ok ? `Prova enviada a ${to}. Revisa també la carpeta de correu brossa.` : 'Brevo no ha acceptat el correu. Comprova la clau i el remitent verificat.';
     } catch {
       msg.textContent = 'No s’ha pogut enviar la prova.';
@@ -700,7 +706,7 @@ async function renderNewsletter() {
     if (!confirm(`Enviar una invitació a ${Math.min(emails.length, 10)} adreça(es)?`)) return;
     out.textContent = 'Enviant…';
     try {
-      const r = await api('/newsletter/invite', { method: 'POST', body: { emails, note: document.getElementById('invNote').value, knowsThem: true } });
+      const r = await api('/newsletter/invite', { method: 'POST', body: { emails, note: document.getElementById('invNote').value, knowsThem: true, lang: document.getElementById('invLang').value } });
       const text = {
         sent: 'invitació enviada',
         invalid: 'adreça no vàlida',
